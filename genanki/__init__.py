@@ -10,7 +10,6 @@ import zipfile
 from .apkg_col import APKG_COL
 from .apkg_schema import APKG_SCHEMA
 
-DECK_ID = 1428564061183
 MODEL_ID = 1425274727596
 
 
@@ -77,7 +76,7 @@ class Note:
     else:
       self.cards.append(Card(*args, **kwargs))
 
-  def write_to_db(self, cursor, now_ts):
+  def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         _random_guid(),         # TODO guid
         MODEL_ID,               # mid
@@ -92,7 +91,7 @@ class Note:
     ))
 
     for card in self.cards:
-      card.write_to_db(cursor, now_ts, DECK_ID, cursor.lastrowid)
+      card.write_to_db(cursor, now_ts, deck_id, cursor.lastrowid)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)
@@ -102,7 +101,8 @@ class Note:
 
 
 class Deck:
-  def __init__(self, name=None, fields=None, templates=None, css=None):
+  def __init__(self, deck_id=None, name=None, fields=None, templates=None, css=None):
+    self.deck_id = deck_id
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
@@ -140,17 +140,18 @@ class Deck:
       tmpl['ord'] = ord_
       tmpl['bafmt'] = ''
       tmpl['bqfmt'] = ''
-      tmpl['did'] = None
+      tmpl['did'] = None  # TODO None works just fine here, but should it be self.deck_id?
 
     query = (APKG_COL
         .replace('NAME', json.dumps(self.name))
         .replace('CARDCSS', json.dumps(self.css))
         .replace('FLDS', json.dumps(self.fields))
-        .replace('TMPLS', json.dumps(self.templates)))
+        .replace('TMPLS', json.dumps(self.templates))
+        .replace('DECKID', json.dumps(self.deck_id)))
     cursor.execute(query)
 
     for note in self.notes:
-      note.write_to_db(cursor, now_ts)
+      note.write_to_db(cursor, now_ts, self.deck_id)
 
 
 class Package:

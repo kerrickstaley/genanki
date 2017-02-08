@@ -102,14 +102,14 @@ INSERT INTO col VALUES(
             ],
             "usn": 0
         },
-        "1428564061183": {
+        "DECKID": {
             "collapsed": false,
             "conf": 1,
             "desc": "",
             "dyn": 0,
             "extendNew": 0,
             "extendRev": 50,
-            "id": 1428564061183,
+            "id": DECKID,
             "lrnToday": [
                 163,
                 2
