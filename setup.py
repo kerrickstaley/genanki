@@ -8,4 +8,7 @@ setup(name='genanki',
       author_email='k@kerrickstaley.com',
       license='MIT',
       packages=['genanki'],
-      zip_safe=False)
+      zip_safe=False,
+      install_requires=[
+        'pyyaml',
+      ])
