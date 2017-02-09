@@ -10,8 +10,6 @@ import zipfile
 from .apkg_col import APKG_COL
 from .apkg_schema import APKG_SCHEMA
 
-MODEL_ID = 1425274727596
-
 
 def _random_guid():
   # TODO we want a stable guid
@@ -28,6 +26,92 @@ def _random_guid():
     val //= 91
 
   return ''.join(reversed(rv_reversed))
+
+
+class Model:
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css=None):
+    self.model_id = model_id
+    self.name = name
+    self.set_fields(fields)
+    self.set_templates(templates)
+    self.set_css(css)
+
+  def set_fields(self, fields):
+    if isinstance(fields, list):
+      self.fields = fields
+    elif isinstance(fields, str):
+      self.fields = yaml.load(fields)
+    else:
+      self.fields = yaml.load(fields.read())
+
+  def set_templates(self, templates):
+    if isinstance(templates, list):
+      self.templates = templates
+    elif isinstance(templates, str):
+      self.templates = yaml.load(templates)
+    else:
+      self.templates = yaml.load(templates.read())
+
+  def set_css(self, css):
+    if isinstance(css, str):
+      self.css = css
+    else:
+      self.css = css.read()
+
+  def to_json(self, now_ts, deck_id):
+    for ord_, tmpl in enumerate(self.templates):
+      tmpl['ord'] = ord_
+      tmpl['bafmt'] = ''
+      tmpl['bqfmt'] = ''
+      tmpl['did'] = None  # TODO None works just fine here, but should it be deck_id?
+
+    return {
+      "css": self.css,
+      "did": deck_id,
+      "flds": self.fields,
+      "id": "1425274727596",
+      "latexPost": "\\end{document}",
+      "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage{amssymb,amsmath}\n"
+                  "\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+      "mod": now_ts,
+      "name": self.name,
+      "req": [
+          [
+              0,
+              "all",
+              [
+                  2
+              ]
+          ],
+          [
+              1,
+              "all",
+              [
+                  0
+              ]
+          ],
+          [
+              2,
+              "all",
+              [
+                  1
+              ]
+          ],
+          [
+              3,
+              "all",
+              [
+                  3
+              ]
+          ]
+      ],
+      "sortf": 0,
+      "tags": [],
+      "tmpls": self.templates,
+      "type": 0,
+      "usn": -1,
+      "vers": []
+    }
 
 
 class Card:
@@ -79,7 +163,7 @@ class Note:
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         _random_guid(),         # TODO guid
-        MODEL_ID,               # mid
+        self.model.model_id,    # mid
         now_ts,                 # mod
         -1,                     # usn
         self._format_tags(),    # TODO tags
@@ -101,53 +185,27 @@ class Note:
 
 
 class Deck:
-  def __init__(self, deck_id=None, name=None, fields=None, templates=None, css=None):
+  def __init__(self, deck_id=None, name=None):
     self.deck_id = deck_id
     self.name = name
-    self.set_fields(fields)
-    self.set_templates(templates)
-    self.set_css(css)
     self.notes = []
+    self.models = {}  # map of model id to model
 
   def add_note(self, note):
     self.notes.append(note)
 
-  def set_fields(self, fields):
-    if isinstance(fields, list):
-      self.fields = fields
-    elif isinstance(fields, str):
-      self.fields = yaml.load(fields)
-    else:
-      self.fields = yaml.load(fields.read())
-
-  def set_templates(self, templates):
-    if isinstance(templates, list):
-      self.templates = templates
-    elif isinstance(templates, str):
-      self.templates = yaml.load(templates)
-    else:
-      self.templates = yaml.load(templates.read())
-
-  def set_css(self, css):
-    if isinstance(css, str):
-      self.css = css
-    else:
-      self.css = css.read()
+  def add_model(self, model):
+    self.models[model.model_id] = model
 
   def write_to_db(self, cursor, now_ts):
-    # a lot of this stuff is in the wrong place, deck ID is hardcoded
-    for ord_, tmpl in enumerate(self.templates):
-      tmpl['ord'] = ord_
-      tmpl['bafmt'] = ''
-      tmpl['bqfmt'] = ''
-      tmpl['did'] = None  # TODO None works just fine here, but should it be self.deck_id?
+    for note in self.notes:
+      self.add_model(note.model)
+    models = {model.model_id: model.to_json(now_ts, self.deck_id) for model in self.models.values()}
 
     query = (APKG_COL
         .replace('NAME', json.dumps(self.name))
-        .replace('CARDCSS', json.dumps(self.css))
-        .replace('FLDS', json.dumps(self.fields))
-        .replace('TMPLS', json.dumps(self.templates))
-        .replace('DECKID', json.dumps(self.deck_id)))
+        .replace('DECKID', json.dumps(self.deck_id))
+        .replace('MODELS', json.dumps(models)))
     cursor.execute(query)
 
     for note in self.notes:

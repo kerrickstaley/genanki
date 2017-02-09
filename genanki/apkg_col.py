@@ -25,54 +25,7 @@ INSERT INTO col VALUES(
         "sortType": "noteFld",
         "timeLim": 0
     }',
-    '{
-        "1425274727596": {
-            "css": CARDCSS,
-            "did": 1411440783087,
-            "flds": FLDS,
-            "id": "1425274727596",
-            "latexPost": "\\end{document}",
-            "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
-            "mod": 1425277891,
-            "name": NAME,
-            "req": [
-                [
-                    0,
-                    "all",
-                    [
-                        2
-                    ]
-                ],
-                [
-                    1,
-                    "all",
-                    [
-                        0
-                    ]
-                ],
-                [
-                    2,
-                    "all",
-                    [
-                        1
-                    ]
-                ],
-                [
-                    3,
-                    "all",
-                    [
-                        3
-                    ]
-                ]
-            ],
-            "sortf": 0,
-            "tags": [],
-            "tmpls": TMPLS,
-            "type": 0,
-            "usn": -1,
-            "vers": []
-        }
-    }',
+    'MODELS',
     '{
         "1": {
             "collapsed": false,
