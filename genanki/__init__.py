@@ -1,4 +1,5 @@
 import json
+import hashlib
 import os
 import random
 import sqlite3
@@ -10,22 +11,37 @@ import zipfile
 from .apkg_col import APKG_COL
 from .apkg_schema import APKG_SCHEMA
 
+BASE91_TABLE = [
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+  't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+  'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4',
+  '5', '6', '7', '8', '9', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/', ':',
+  ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~']
 
-def _random_guid():
-  # TODO we want a stable guid
-  base91_table = [
-      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
-      't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-      'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4',
-      '5', '6', '7', '8', '9', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/', ':',
-      ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~']
-  val = random.randrange(2 ** 64)
+
+def guid_for(*values):
+  hash_str = '__'.join(str(val) for val in values)
+
+  # get the first 8 bytes of the SHA256 of hash_str as an int
+  m = hashlib.sha256()
+  m.update(hash_str.encode('utf-8'))
+  hash_bytes = m.digest()[:8]
+  hash_int = 0
+  for b in hash_bytes:
+    hash_int <<= 8
+    hash_int += b
+
+  # convert to the weird base91 format that Anki uses
   rv_reversed = []
-  while val > 0:
-    rv_reversed.append(base91_table[val % 91])
-    val //= 91
+  while hash_int > 0:
+    rv_reversed.append(BASE91_TABLE[hash_int % 91])
+    hash_int //= 91
 
   return ''.join(reversed(rv_reversed))
+
+
+def _random_guid():
+  return guid_for(random.randrange(2 ** 64))
 
 
 class Model:
@@ -141,8 +157,8 @@ class Card:
 
 
 class Note:
-  def __init__(self, model, fields, sort_field=None, tags=None):
-    self.model = model  # TODO use this
+  def __init__(self, model, fields, sort_field=None, tags=None, guid=None):
+    self.model = model
     self.fields = fields
 
     if sort_field:
@@ -153,6 +169,11 @@ class Note:
 
     self.tags = tags or []
     self.cards = []
+    try:
+      self.guid = guid
+    except AttributeError:
+      # allow computing guid as a property
+      pass
 
   def add_card(self, *args, **kwargs):
     if len(args) == 1 and not kwargs and isinstance(args[0], Card):
@@ -162,16 +183,16 @@ class Note:
 
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
-        _random_guid(),         # TODO guid
-        self.model.model_id,    # mid
-        now_ts,                 # mod
-        -1,                     # usn
-        self._format_tags(),    # TODO tags
-        self._format_fields(),  # flds
-        self.sort_field,        # sfld
-        0,                      # csum, can be ignored
-        0,                      # flags
-        '',                     # data
+        self.guid or _random_guid(),  # guid
+        self.model.model_id,          # mid
+        now_ts,                       # mod
+        -1,                           # usn
+        self._format_tags(),          # TODO tags
+        self._format_fields(),        # flds
+        self.sort_field,              # sfld
+        0,                            # csum, can be ignored
+        0,                            # flags
+        '',                           # data
     ))
 
     for card in self.cards:
