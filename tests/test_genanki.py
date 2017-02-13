@@ -8,6 +8,40 @@ import anki.importing.apkg
 
 import genanki
 
+TEST_MODEL = genanki.Model(
+  234567, 'foomodel',
+  fields=[
+    {
+      'font': 'Liberation Sans',
+      'media': [],
+      'name': 'AField',
+      'ord': 0,
+      'rtl': False,
+      'size': 20,
+      'sticky': False
+    },
+    {
+      'font': 'Liberation Sans',
+      'media': [],
+      'name': 'BField',
+      'ord': 1,
+      'rtl': False,
+      'size': 20,
+      'sticky': False
+    },
+  ],
+  templates=[
+    {
+      'name': 'card1',
+      'qfmt': '{{AField}}',
+      'afmt': '{{FrontSide}}'
+              '<hr id="answer">'
+              '{{BField}}',
+    }
+  ],
+  css='',
+)
+
 
 class TestWithCollection:
   def setup(self):
@@ -19,44 +53,11 @@ class TestWithCollection:
 
   def test_generated_deck_can_be_imported(self):
     deck = genanki.Deck(123456, 'foodeck')
-    model = genanki.Model(
-      234567, 'foomodel',
-      fields=[
-        {
-          'font': 'Liberation Sans',
-          'media': [],
-          'name': 'AField',
-          'ord': 0,
-          'rtl': False,
-          'size': 20,
-          'sticky': False
-        },
-        {
-          'font': 'Liberation Sans',
-          'media': [],
-          'name': 'BField',
-          'ord': 1,
-          'rtl': False,
-          'size': 20,
-          'sticky': False
-        },
-      ],
-      templates=[
-        {
-          'name': 'card1',
-          'qfmt': '{{AField}}',
-          'afmt': '{{FrontSide}}'
-                  '<hr id="answer">'
-                  '{{BField}}',
-        }
-      ],
-      css='',
-    )
-    note = genanki.Note(model, ['a', 'b'])
+    note = genanki.Note(TEST_MODEL, ['a', 'b'])
     note.add_card(0)
     deck.add_note(note)
 
-    outf = tempfile.NamedTemporaryFile(delete=False)
+    outf = tempfile.NamedTemporaryFile(suffix='.apkg', delete=False)
     outf.close()
 
     genanki.Package(deck).write_to_file(outf.name)
