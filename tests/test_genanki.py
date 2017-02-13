@@ -70,3 +70,24 @@ class TestWithCollection:
     imported_deck = all_imported_decks[1]
 
     assert imported_deck['name'] == 'foodeck'
+
+  def test_card_isEmtpy__with_2_fields__succeeds(self):
+    """Tests for a bug in an early version of genanki where notes with <4 fields were not supported."""
+    deck = genanki.Deck(123456, 'foodeck')
+    note = genanki.Note(TEST_MODEL, ['a', 'b'])
+    note.add_card(0)
+    deck.add_note(note)
+
+    outf = tempfile.NamedTemporaryFile(suffix='.apkg', delete=False)
+    outf.close()
+
+    genanki.Package(deck).write_to_file(outf.name)
+
+    importer = anki.importing.apkg.AnkiPackageImporter(self.col, outf.name)
+    importer.run()
+
+    anki_note = self.col.getNote(self.col.findNotes('')[0])
+    anki_card = anki_note.cards()[0]
+
+    # test passes if this doesn't raise an exception
+    anki_card.isEmpty()

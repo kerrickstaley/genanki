@@ -81,6 +81,10 @@ class Model:
       tmpl['bqfmt'] = ''
       tmpl['did'] = None  # TODO None works just fine here, but should it be deck_id?
 
+    # TODO: figure out how req works
+    all_field_ords = list(range(len(self.fields)))
+    req = [[tmpl_ord, "all", all_field_ords] for tmpl_ord in range(len(self.templates))]
+
     return {
       "css": self.css,
       "did": deck_id,
@@ -91,36 +95,7 @@ class Model:
                   "\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
       "mod": now_ts,
       "name": self.name,
-      "req": [
-          [
-              0,
-              "all",
-              [
-                  2
-              ]
-          ],
-          [
-              1,
-              "all",
-              [
-                  0
-              ]
-          ],
-          [
-              2,
-              "all",
-              [
-                  1
-              ]
-          ],
-          [
-              3,
-              "all",
-              [
-                  3
-              ]
-          ]
-      ],
+      "req": req,
       "sortf": 0,
       "tags": [],
       "tmpls": self.templates,
