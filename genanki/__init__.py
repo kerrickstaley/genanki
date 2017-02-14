@@ -45,7 +45,7 @@ def _random_guid():
 
 
 class Model:
-  def __init__(self, model_id=None, name=None, fields=None, templates=None, css=None):
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css=''):
     self.model_id = model_id
     self.name = name
     self.set_fields(fields)

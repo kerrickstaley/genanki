@@ -39,7 +39,6 @@ TEST_MODEL = genanki.Model(
               '{{BField}}',
     }
   ],
-  css='',
 )
 
 
