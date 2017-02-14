@@ -102,4 +102,5 @@ necessary. By default, the `sort_field` is the first field, but you can change i
 or implementing `sort_field` as a property in a subclass (similar to `guid`).
 
 ## YAML for Templates (and Fields)
-You can create your template definitions in the YAML format and pass them as a `str` to `Model()`.
+You can create your template definitions in the YAML format and pass them as a `str` to `Model()`. You can also do this
+for fields.
