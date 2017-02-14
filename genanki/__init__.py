@@ -132,18 +132,13 @@ class Card:
 
 
 class Note:
-  def __init__(self, model, fields, sort_field=None, tags=None, guid=None):
+  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
     self.model = model
     self.fields = fields
-
-    if sort_field:
-      self.sort_field = sort_field
-    else:
-      # TODO this is probably wrong
-      self.sort_field = fields[0]
-
+    self.sort_field = sort_field
     self.tags = tags or []
     self.cards = []
+
     try:
       self.guid = guid
     except AttributeError:
@@ -155,6 +150,14 @@ class Note:
       self.cards.append(args[0])
     else:
       self.cards.append(Card(*args, **kwargs))
+
+  @property
+  def sort_field(self):
+    return self._sort_field or self.fields[0]
+
+  @sort_field.setter
+  def sort_field(self, val):
+    self._sort_field = val
 
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
