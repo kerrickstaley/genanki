@@ -162,7 +162,7 @@ class Note:
   @property
   def cards(self):
     if self._cards is None:
-      return list(range(len(self.model.templates)))
+      return [Card(i) for i in range(len(self.model.templates))]
     return self._cards
 
   @cards.setter
