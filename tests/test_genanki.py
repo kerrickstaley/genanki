@@ -12,22 +12,10 @@ TEST_MODEL = genanki.Model(
   234567, 'foomodel',
   fields=[
     {
-      'font': 'Liberation Sans',
-      'media': [],
       'name': 'AField',
-      'ord': 0,
-      'rtl': False,
-      'size': 20,
-      'sticky': False
     },
     {
-      'font': 'Liberation Sans',
-      'media': [],
       'name': 'BField',
-      'ord': 1,
-      'rtl': False,
-      'size': 20,
-      'sticky': False
     },
   ],
   templates=[

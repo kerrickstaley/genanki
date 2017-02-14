@@ -77,9 +77,17 @@ class Model:
   def to_json(self, now_ts, deck_id):
     for ord_, tmpl in enumerate(self.templates):
       tmpl['ord'] = ord_
-      tmpl['bafmt'] = ''
-      tmpl['bqfmt'] = ''
-      tmpl['did'] = None  # TODO None works just fine here, but should it be deck_id?
+      tmpl.setdefault('bafmt', '')
+      tmpl.setdefault('bqfmt', '')
+      tmpl.setdefault('did', None)  # TODO None works just fine here, but should it be deck_id?
+
+    for ord_, field in enumerate(self.fields):
+      field['ord'] = ord_
+      field.setdefault('font', 'Liberation Sans')
+      field.setdefault('media', [])
+      field.setdefault('rtl', False)
+      field.setdefault('size', 20)
+      field.setdefault('sticky', False)
 
     # TODO: figure out how req works
     all_field_ords = list(range(len(self.fields)))
