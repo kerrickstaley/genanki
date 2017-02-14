@@ -40,10 +40,6 @@ def guid_for(*values):
   return ''.join(reversed(rv_reversed))
 
 
-def _random_guid():
-  return guid_for(random.randrange(2 ** 64))
-
-
 class Model:
   def __init__(self, model_id=None, name=None, fields=None, templates=None, css=''):
     self.model_id = model_id
@@ -146,12 +142,7 @@ class Note:
     self.sort_field = sort_field
     self.tags = tags or []
     self.cards = cards
-
-    try:
-      self.guid = guid
-    except AttributeError:
-      # allow computing guid as a property
-      pass
+    self.guid = guid
 
   def add_card(self, *args, **kwargs):
     if len(args) == 1 and not kwargs and isinstance(args[0], Card):
@@ -177,9 +168,19 @@ class Note:
   def cards(self, val):
     self._cards = val
 
+  @property
+  def guid(self):
+    if self._guid is None:
+      return guid_for(*self.fields)
+    return self._guid
+
+  @guid.setter
+  def guid(self, val):
+    self._guid = val
+
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
-        self.guid or _random_guid(),  # guid
+        self.guid,                    # guid
         self.model.model_id,          # mid
         now_ts,                       # mod
         -1,                           # usn
