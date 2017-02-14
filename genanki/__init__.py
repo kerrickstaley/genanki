@@ -46,29 +46,19 @@ class Model:
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
-    self.set_css(css)
+    self.css = css
 
   def set_fields(self, fields):
     if isinstance(fields, list):
       self.fields = fields
     elif isinstance(fields, str):
       self.fields = yaml.load(fields)
-    else:
-      self.fields = yaml.load(fields.read())
 
   def set_templates(self, templates):
     if isinstance(templates, list):
       self.templates = templates
     elif isinstance(templates, str):
       self.templates = yaml.load(templates)
-    else:
-      self.templates = yaml.load(templates.read())
-
-  def set_css(self, css):
-    if isinstance(css, str):
-      self.css = css
-    else:
-      self.css = css.read()
 
   def to_json(self, now_ts, deck_id):
     for ord_, tmpl in enumerate(self.templates):
