@@ -132,12 +132,12 @@ class Card:
 
 
 class Note:
-  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
+  def __init__(self, model=None, fields=None, sort_field=None, tags=None, cards=None, guid=None):
     self.model = model
     self.fields = fields
     self.sort_field = sort_field
     self.tags = tags or []
-    self.cards = []
+    self.cards = cards
 
     try:
       self.guid = guid
@@ -158,6 +158,16 @@ class Note:
   @sort_field.setter
   def sort_field(self, val):
     self._sort_field = val
+
+  @property
+  def cards(self):
+    if self._cards is None:
+      return list(range(len(self.model.templates)))
+    return self._cards
+
+  @cards.setter
+  def cards(self, val):
+    self._cards = val
 
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
