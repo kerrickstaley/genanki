@@ -83,7 +83,7 @@ class Model:
       "css": self.css,
       "did": deck_id,
       "flds": self.fields,
-      "id": "1425274727596",
+      "id": str(self.model_id),
       "latexPost": "\\end{document}",
       "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage{amssymb,amsmath}\n"
                   "\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
