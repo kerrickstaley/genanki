@@ -11,4 +11,9 @@ setup(name='genanki',
       zip_safe=False,
       install_requires=[
         'pyyaml',
+      ],
+      keywords=[
+        'anki',
+        'flashcards',
+        'memorization',
       ])
