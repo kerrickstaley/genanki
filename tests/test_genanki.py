@@ -116,3 +116,12 @@ class TestWithCollection:
 
     assert len(n2.cards) == 1
     assert n2.cards[0].ord == 0
+
+  def test_Note_with_guid_property(self):
+    class MyNote(genanki.Note):
+      @property
+      def guid(self):
+        return '3'
+
+    # test passes if this doesn't raise an exception
+    MyNote()

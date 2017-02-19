@@ -167,7 +167,11 @@ class Note:
     self.fields = fields
     self.sort_field = sort_field
     self.tags = tags or []
-    self.guid = guid
+    try:
+      self.guid = guid
+    except AttributeError:
+      # guid was defined as a property
+      pass
 
   @property
   def sort_field(self):
