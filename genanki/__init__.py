@@ -178,7 +178,7 @@ class Card:
 
 
 class Note:
-  def __init__(self, model=None, fields=None, sort_field=None, tags=None, cards=None, guid=None):
+  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
     self.model = model
     self.fields = fields
     self.sort_field = sort_field
