@@ -10,6 +10,9 @@ setup(name='genanki',
       packages=['genanki'],
       zip_safe=False,
       install_requires=[
+        'cached-property',
+        'frozendict',
+        'pystache',
         'pyyaml',
       ],
       keywords=[

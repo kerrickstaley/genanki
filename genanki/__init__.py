@@ -1,7 +1,9 @@
+from cached_property import cached_property
+from copy import copy
 import json
 import hashlib
 import os
-import random
+import pystache
 import sqlite3
 import tempfile
 import time
@@ -60,6 +62,44 @@ class Model:
     elif isinstance(templates, str):
       self.templates = yaml.load(templates)
 
+  @cached_property
+  def _req(self):
+    """
+    List of required fields for each template. Format is [tmpl_idx, "all", [req_field_1, req_field_2, ...]].
+
+    Partial reimplementation of req computing logic from Anki. We only support "all" style req, not "any".
+
+    The goal is to figure out which fields are "required", i.e. if they are missing then the front side of the note
+    doesn't contain any meaningful content.
+    """
+    sentinel = 'SeNtInEl'
+
+    field_names = [field['name'] for field in self.fields]
+    field_values = {field: sentinel for field in field_names}
+
+    req = []
+    for template_ord, template in enumerate(self.templates):
+      required_fields = []
+      for field_ord, field in enumerate(field_names):
+        fvcopy = copy(field_values)
+        fvcopy[field] = ''
+
+        rendered = pystache.render(template['qfmt'], fvcopy)
+
+        if sentinel not in rendered:
+          # when this field is missing, there is no meaningful content (no field values) in the question, so this field
+          # is required
+          required_fields.append(field_ord)
+
+      if not required_fields:
+        raise Exception(
+          'Could not compute required fields for this template; please check the formatting of "qfmt": {}'.format(
+            template))
+
+      req.append([template_ord, 'all', required_fields])
+
+    return req
+
   def to_json(self, now_ts, deck_id):
     for ord_, tmpl in enumerate(self.templates):
       tmpl['ord'] = ord_
@@ -75,10 +115,6 @@ class Model:
       field.setdefault('size', 20)
       field.setdefault('sticky', False)
 
-    # TODO: figure out how req works
-    all_field_ords = list(range(len(self.fields)))
-    req = [[tmpl_ord, "all", all_field_ords] for tmpl_ord in range(len(self.templates))]
-
     return {
       "css": self.css,
       "did": deck_id,
@@ -89,7 +125,7 @@ class Model:
                   "\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
       "mod": now_ts,
       "name": self.name,
-      "req": req,
+      "req": self._req,
       "sortf": 0,
       "tags": [],
       "tmpls": self.templates,
@@ -101,13 +137,13 @@ class Model:
 
 class Card:
   def __init__(self, ord_):
-    self.ord_ = ord_
+    self.ord = ord_
 
   def write_to_db(self, cursor, now_ts, deck_id, note_id):
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
         note_id,    # nid
         deck_id,    # did
-        self.ord_,  # ord
+        self.ord,   # ord
         now_ts,     # mod
         -1,         # usn
         0,          # type (=0 for non-Cloze)
@@ -131,14 +167,7 @@ class Note:
     self.fields = fields
     self.sort_field = sort_field
     self.tags = tags or []
-    self.cards = cards
     self.guid = guid
-
-  def add_card(self, *args, **kwargs):
-    if len(args) == 1 and not kwargs and isinstance(args[0], Card):
-      self.cards.append(args[0])
-    else:
-      self.cards.append(Card(*args, **kwargs))
 
   @property
   def sort_field(self):
@@ -148,15 +177,15 @@ class Note:
   def sort_field(self, val):
     self._sort_field = val
 
-  @property
+  # We use cached_property instead of initializing in the constructor so that the user can set the model after calling
+  # __init__ and it'll still work.
+  @cached_property
   def cards(self):
-    if self._cards is None:
-      return [Card(i) for i in range(len(self.model.templates))]
-    return self._cards
-
-  @cards.setter
-  def cards(self, val):
-    self._cards = val
+    rv = []
+    for card_ord, _, required_field_ords in self.model._req:
+      if all(self.fields[ord_] for ord_ in required_field_ords):
+        rv.append(Card(card_ord))
+    return rv
 
   @property
   def guid(self):

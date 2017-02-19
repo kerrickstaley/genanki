@@ -86,17 +86,6 @@ class MyNote(genanki.Note):
     return genanki.guid_for(self.fields[0], self.fields[1])
 ```
 
-## Only Including Certain Cards
-By default, all `Card`s are included when you add a `Note` to a deck. You can control which cards are included by
-explicitly passing `cards=[]` to `Note()` and then calling `add_card` with the card number:
-
-```python
-my_note = Note(
-  ...,
-  cards=[])
-my_note.add_card(1)  # add the card corresponding to the 2nd template
-```
-
 ## sort_field
 Anki has a value for each `Note` called the `sort_field`. Anki uses this value to sort the cards in the Browse
 interface. Anki also is happier if you avoid having two notes with the same `sort_field`, although this isn't strictly
