@@ -202,8 +202,9 @@ class Note:
   @cached_property
   def cards(self):
     rv = []
-    for card_ord, _, required_field_ords in self.model._req:
-      if all(self.fields[ord_] for ord_ in required_field_ords):
+    for card_ord, any_or_all, required_field_ords in self.model._req:
+      op = {'any': any, 'all': all}[any_or_all]
+      if op(self.fields[ord_] for ord_ in required_field_ords):
         rv.append(Card(card_ord))
     return rv
 

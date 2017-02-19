@@ -120,7 +120,7 @@ class TestWithCollection:
   def test_Model_req__with_hint(self):
     assert TEST_MODEL_WITH_HINT._req == [[0, 'any', [0, 1]]]
 
-  def test_notes_generate_cards_based_on_req(self):
+  def test_notes_generate_cards_based_on_req__cn(self):
     # has 'Simplified' field, will generate a 'Simplified' card
     n1 = genanki.Note(model=TEST_CN_MODEL, fields=['中國', '中国', 'China'])
     # no 'Simplified' field, so it won't generate a 'Simplified' card
@@ -130,6 +130,16 @@ class TestWithCollection:
     assert n1.cards[0].ord == 0
     assert n1.cards[1].ord == 1
 
+    assert len(n2.cards) == 1
+    assert n2.cards[0].ord == 0
+
+  def test_notes_generate_cards_based_on_req__with_hint(self):
+    # both of these notes will generate one card
+    n1 = genanki.Note(model=TEST_MODEL_WITH_HINT, fields=['capital of California', '', 'Sacramento'])
+    n2 = genanki.Note(model=TEST_MODEL_WITH_HINT, fields=['capital of Iowa', 'French for "The Moines"', 'Des Moines'])
+
+    assert len(n1.cards) == 1
+    assert n1.cards[0].ord == 0
     assert len(n2.cards) == 1
     assert n2.cards[0].ord == 0
 
