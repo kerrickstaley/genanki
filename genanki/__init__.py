@@ -232,8 +232,9 @@ class Note:
         '',                           # data
     ))
 
+    note_id = cursor.lastrowid
     for card in self.cards:
-      card.write_to_db(cursor, now_ts, deck_id, cursor.lastrowid)
+      card.write_to_db(cursor, now_ts, deck_id, note_id)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)
