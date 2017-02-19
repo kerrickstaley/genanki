@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='genanki',
-      version='0.1',
+      version='0.2',
       description='Generate Anki decks programmatically',
       url='http://github.com/kerrickstaley/genanki',
       author='Kerrick Staley',
