@@ -65,20 +65,20 @@ class Model:
   @cached_property
   def _req(self):
     """
-    List of required fields for each template. Format is [tmpl_idx, "all", [req_field_1, req_field_2, ...]].
+    List of required fields for each template. Format is [tmpl_idx, "all"|"any", [req_field_1, req_field_2, ...]].
 
-    Partial reimplementation of req computing logic from Anki. We only support "all" style req, not "any".
+    Partial reimplementation of req computing logic from Anki. We use pystache instead of Anki's custom mustache
+    implementation.
 
     The goal is to figure out which fields are "required", i.e. if they are missing then the front side of the note
     doesn't contain any meaningful content.
     """
     sentinel = 'SeNtInEl'
-
     field_names = [field['name'] for field in self.fields]
-    field_values = {field: sentinel for field in field_names}
 
     req = []
     for template_ord, template in enumerate(self.templates):
+      field_values = {field: sentinel for field in field_names}
       required_fields = []
       for field_ord, field in enumerate(field_names):
         fvcopy = copy(field_values)
@@ -91,12 +91,28 @@ class Model:
           # is required
           required_fields.append(field_ord)
 
+      if required_fields:
+        req.append([template_ord, 'all', required_fields])
+        continue
+
+      # there are no required fields, so an "all" is not appropriate, switch to checking for "any"
+      field_values = {field: '' for field in field_names}
+      for field_ord, field in enumerate(field_names):
+        fvcopy = copy(field_values)
+        fvcopy[field] = sentinel
+
+        rendered = pystache.render(template['qfmt'], fvcopy)
+
+        if sentinel in rendered:
+          # when this field is present, there is meaningful content in the question
+          required_fields.append(field_ord)
+
       if not required_fields:
         raise Exception(
           'Could not compute required fields for this template; please check the formatting of "qfmt": {}'.format(
             template))
 
-      req.append([template_ord, 'all', required_fields])
+      req.append([template_ord, 'any', required_fields])
 
     return req
 

@@ -50,6 +50,19 @@ TEST_CN_MODEL = genanki.Model(
   ],
 )
 
+TEST_MODEL_WITH_HINT = genanki.Model(
+  456789, 'with hint',
+  fields=[{'name': 'Question'}, {'name': 'Hint'}, {'name': 'Answer'}],
+  templates=[
+    {
+      'name': 'card1',
+      'qfmt': '{{Question}}'
+              '{{#Hint}}<br>Hint: {{Hint}}{{/Hint}}',
+      'afmt': '{{Answer}}',
+    },
+  ],
+)
+
 
 class TestWithCollection:
   def setup(self):
@@ -103,6 +116,9 @@ class TestWithCollection:
 
   def test_Model_req__cn(self):
     assert TEST_CN_MODEL._req == [[0, 'all', [0]], [1, 'all', [1]]]
+
+  def test_Model_req__with_hint(self):
+    assert TEST_MODEL_WITH_HINT._req == [[0, 'any', [0, 1]]]
 
   def test_notes_generate_cards_based_on_req(self):
     # has 'Simplified' field, will generate a 'Simplified' card
