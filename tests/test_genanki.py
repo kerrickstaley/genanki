@@ -99,6 +99,24 @@ class TestWithCollection:
 
     assert imported_deck['name'] == 'foodeck'
 
+  def test_generated_deck_has_valid_cards(self):
+    """
+    Generates a deck with several notes and verifies that the nid/ord combinations on the generated cards make sense.
+
+    Catches a bug that was fixed in 08d8a139.
+    """
+    deck = genanki.Deck(123456, 'foodeck')
+    deck.add_note(genanki.Note(TEST_CN_MODEL, ['a', 'b', 'c']))  # 2 cards
+    deck.add_note(genanki.Note(TEST_CN_MODEL, ['d', 'e', 'f']))  # 2 cards
+    deck.add_note(genanki.Note(TEST_CN_MODEL, ['g', 'h', 'i']))  # 2 cards
+
+    self.import_package(genanki.Package(deck))
+
+    cards = [self.col.getCard(i) for i in self.col.findCards('')]
+
+    # the bug causes us to fail to generate certain cards (e.g. the second card for the second note)
+    assert len(cards) == 6
+
   def test_card_isEmpty__with_2_fields__succeeds(self):
     """Tests for a bug in an early version of genanki where notes with <4 fields were not supported."""
     deck = genanki.Deck(123456, 'foodeck')
