@@ -72,18 +72,26 @@ class TestWithCollection:
     colf.close()  # colf is deleted
     self.col = anki.Collection(colf_name)
 
+  def import_package(self, pkg):
+    """
+    Imports `pkg` into self.col.
+
+    :param genanki.Package pkg:
+    """
+    outf = tempfile.NamedTemporaryFile(suffix='.apkg', delete=False)
+    outf.close()
+
+    pkg.write_to_file(outf.name)
+
+    importer = anki.importing.apkg.AnkiPackageImporter(self.col, outf.name)
+    importer.run()
+
   def test_generated_deck_can_be_imported(self):
     deck = genanki.Deck(123456, 'foodeck')
     note = genanki.Note(TEST_MODEL, ['a', 'b'])
     deck.add_note(note)
 
-    outf = tempfile.NamedTemporaryFile(suffix='.apkg', delete=False)
-    outf.close()
-
-    genanki.Package(deck).write_to_file(outf.name)
-
-    importer = anki.importing.apkg.AnkiPackageImporter(self.col, outf.name)
-    importer.run()
+    self.import_package(genanki.Package(deck))
 
     all_imported_decks = self.col.decks.all()
     assert len(all_imported_decks) == 2  # default deck and foodeck
@@ -97,13 +105,7 @@ class TestWithCollection:
     note = genanki.Note(TEST_MODEL, ['a', 'b'])
     deck.add_note(note)
 
-    outf = tempfile.NamedTemporaryFile(suffix='.apkg', delete=False)
-    outf.close()
-
-    genanki.Package(deck).write_to_file(outf.name)
-
-    importer = anki.importing.apkg.AnkiPackageImporter(self.col, outf.name)
-    importer.run()
+    self.import_package(genanki.Package(deck))
 
     anki_note = self.col.getNote(self.col.findNotes('')[0])
     anki_card = anki_note.cards()[0]
