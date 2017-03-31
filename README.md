@@ -68,7 +68,9 @@ genanki.Package(my_deck).write_to_file('output.apkg')
 If you need to add media files, then upon calling write_to_file function, give it a list of filenames.
 The media files should be in the current working directory. They can be reference in the field in the following ways:
   - [sound:sound.mp3]
-  - <img src="image.jpg" /> 
+  ```html
+  - <img src="image.jpg" />
+  ``` 
 ```python
 genanki.Package(my_deck).write_to_file('output.apkg', ['sound.mp3', 'image.jpg'])
 ```
