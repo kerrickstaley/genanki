@@ -1,5 +1,5 @@
 dist: trusty
 sudo: false
 before_install:
-  - apt-get -qq update
-  - apt-get install -y anki
+  - sudo apt-get -qq update
+  - sudo apt-get install -y anki
