@@ -81,7 +81,7 @@ The media files should be in the current working directory. They can be referenc
 
 ```html
 [sound:sound.mp3]
-<img src="image.jpg" />
+<img src="image.jpg">
 ```
 
 ## Note GUIDs
