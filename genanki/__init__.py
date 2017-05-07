@@ -299,7 +299,7 @@ class Package:
       media_json = dict(enumerate(self.media_files))
       outzip.writestr('media', json.dumps(media_json))
 
-      for i, f in enumerate(self.media_files):
+      for i, f in media_json.items():
         outzip.write(f, str(i))
 
   def write_to_db(self, cursor, now_ts):
