@@ -1,8 +1,7 @@
 language: python
 python:
   - '3.6'
-script: './run_tests.sh'
 dist: trusty
 sudo: required
-before_install:
-  - './setup_tests.sh'
+install: './setup_tests.sh'
+script: './run_tests.sh'
