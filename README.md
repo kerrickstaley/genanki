@@ -70,7 +70,7 @@ genanki.Package(my_deck).write_to_file('output.apkg')
 You can then load `output.apkg` into Anki using File -> Import...
 
 ## Media Files
-To add media files, set the `media_files` attribute on your `Package`:
+To add sounds or images, set the `media_files` attribute on your `Package`:
 
 ```python
 my_package = genanki.Package(my_deck)
@@ -78,10 +78,11 @@ my_package.media_files = ['sound.mp3', 'image.jpg']
 ```
 
 The media files should be in the current working directory. They can be referenced in notes like this:
-  ```html
-  - [sound:sound.mp3]
-  - <img src="image.jpg" />
-  ```
+
+```html
+[sound:sound.mp3]
+<img src="image.jpg" />
+```
 
 ## Note GUIDs
 `Note`s have a `guid` property that uniquely identifies the note. If you import a new note that has the same GUID as an
