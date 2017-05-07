@@ -64,6 +64,21 @@ TEST_MODEL_WITH_HINT = genanki.Model(
   ],
 )
 
+# VALID_MP3 and VALID_JPG courtesy of https://github.com/mathiasbynens/small
+VALID_MP3 = (
+  b'\xff\xe3\x18\xc4\x00\x00\x00\x03H\x00\x00\x00\x00LAME3.98.2\x00\x00\x00'
+  b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+  b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+  b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+
+VALID_JPG = (
+  b'\xff\xd8\xff\xdb\x00C\x00\x03\x02\x02\x02\x02\x02\x03\x02\x02\x02\x03\x03'
+  b'\x03\x03\x04\x06\x04\x04\x04\x04\x04\x08\x06\x06\x05\x06\t\x08\n\n\t\x08\t'
+  b'\t\n\x0c\x0f\x0c\n\x0b\x0e\x0b\t\t\r\x11\r\x0e\x0f\x10\x10\x11\x10\n\x0c'
+  b'\x12\x13\x12\x10\x13\x0f\x10\x10\x10\xff\xc9\x00\x0b\x08\x00\x01\x00\x01'
+  b'\x01\x01\x11\x00\xff\xcc\x00\x06\x00\x10\x10\x05\xff\xda\x00\x08\x01\x01'
+  b'\x00\x00?\x00\xd2\xcf \xff\xd9')
+
 
 class TestWithCollection:
   def setup(self):
@@ -172,3 +187,24 @@ class TestWithCollection:
 
     # test passes if this doesn't raise an exception
     MyNote()
+
+  def test_media_files(self):
+    # change to a scratch directory so we can write files
+    os.chdir(tempfile.mkdtemp())
+
+    deck = genanki.Deck(123456, 'foodeck')
+    note = genanki.Note(TEST_MODEL, [
+      'question [sound:present.mp3] [sound:missing.mp3]',
+      'answer <img src="present.jpg"> <img src="missing.jpg">'])
+    deck.add_note(note)
+
+    # populate files with data
+    with open('present.mp3', 'wb') as h:
+      h.write(VALID_MP3)
+    with open('present.jpg', 'wb') as h:
+      h.write(VALID_JPG)
+
+    self.import_package(genanki.Package(deck, media_files=['present.mp3', 'present.jpg']))
+
+    missing, unused, invalid = self.col.media.check()
+    assert set(missing) == {'missing.mp3', 'missing.jpg'}

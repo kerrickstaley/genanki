@@ -272,11 +272,13 @@ class Deck:
 
 
 class Package:
-  def __init__(self, deck_or_decks=None):
+  def __init__(self, deck_or_decks=None, media_files=None):
     if isinstance(deck_or_decks, Deck):
       self.decks = [deck_or_decks]
     else:
       self.decks = deck_or_decks
+
+    self.media_files = media_files or []
 
   def write_to_file(self, file):
     dbfile, dbfilename = tempfile.mkstemp()
@@ -293,7 +295,12 @@ class Package:
 
     with zipfile.ZipFile(file, 'w') as outzip:
       outzip.write(dbfilename, 'collection.anki2')
-      outzip.writestr('media', '{}')
+
+      media_json = dict(enumerate(self.media_files))
+      outzip.writestr('media', json.dumps(media_json))
+
+      for i, f in media_json.items():
+        outzip.write(f, str(i))
 
   def write_to_db(self, cursor, now_ts):
     cursor.executescript(APKG_SCHEMA)
