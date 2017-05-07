@@ -15,6 +15,12 @@ setup(name='genanki',
         'pystache',
         'pyyaml',
       ],
+      setup_requires=[
+          'pytest-runner',
+      ],
+      tests_require=[
+          'pytest',
+      ],
       keywords=[
         'anki',
         'flashcards',

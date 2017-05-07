@@ -1,0 +1,7 @@
+language: python
+python:
+  - '3.6'
+dist: trusty
+sudo: required
+install: './setup_tests.sh'
+script: './run_tests.sh'
