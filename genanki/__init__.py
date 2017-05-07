@@ -278,7 +278,7 @@ class Package:
     else:
       self.decks = deck_or_decks
 
-  def write_to_file(self, file):
+  def write_to_file(self, file, media_files=[]):
     dbfile, dbfilename = tempfile.mkstemp()
     os.close(dbfile)
 
@@ -292,8 +292,15 @@ class Package:
     conn.close()
 
     with zipfile.ZipFile(file, 'w') as outzip:
+      media_json = {}
+      i = 0
+      for file in media_files:
+        outzip.write(file, str(i))
+        media_json[str(i)] = file
+        i += 1
       outzip.write(dbfilename, 'collection.anki2')
-      outzip.writestr('media', '{}')
+      outzip.writestr('media', json.dumps(media_json))
+      
 
   def write_to_db(self, cursor, now_ts):
     cursor.executescript(APKG_SCHEMA)
