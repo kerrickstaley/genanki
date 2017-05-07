@@ -13,7 +13,7 @@ git clone https://github.com/dae/anki.git anki_upstream
 ( cd anki_upstream
   git reset --hard $anki_test_revision
   install_pyaudio_system_deps
-  sudo pip3 install -r requirements.txt
+  pip install -r requirements.txt
 )
 
 exec python3 setup.py pytest --addopts tests
