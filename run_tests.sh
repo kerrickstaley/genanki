@@ -16,4 +16,4 @@ git clone https://github.com/dae/anki.git anki_upstream
   pip install -r requirements.txt
 )
 
-exec python3 setup.py pytest --addopts tests
+exec python setup.py pytest --addopts tests
