@@ -270,6 +270,12 @@ class Deck:
     for note in self.notes:
       note.write_to_db(cursor, now_ts, self.deck_id)
 
+  def write_to_file(self, file):
+    """
+    Write this deck to a .apkg file.
+    """
+    Package(self).write_to_file(file)
+
 
 class Package:
   def __init__(self, deck_or_decks=None, media_files=None):
