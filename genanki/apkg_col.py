@@ -25,7 +25,7 @@ INSERT INTO col VALUES(
         "sortType": "noteFld",
         "timeLim": 0
     }',
-    'MODELS',
+    ?3,
     '{
         "1": {
             "collapsed": false,
@@ -55,20 +55,20 @@ INSERT INTO col VALUES(
             ],
             "usn": 0
         },
-        "DECKID": {
+        "' || ?2 || '": {
             "collapsed": false,
             "conf": 1,
             "desc": "",
             "dyn": 0,
             "extendNew": 0,
             "extendRev": 50,
-            "id": DECKID,
+            "id": ' || ?2 || ',
             "lrnToday": [
                 163,
                 2
             ],
             "mod": 1425278051,
-            "name": NAME,
+            "name": "' || ?1 || '",
             "newToday": [
                 163,
                 2

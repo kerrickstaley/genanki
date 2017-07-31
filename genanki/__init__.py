@@ -261,11 +261,7 @@ class Deck:
       self.add_model(note.model)
     models = {model.model_id: model.to_json(now_ts, self.deck_id) for model in self.models.values()}
 
-    query = (APKG_COL
-        .replace('NAME', json.dumps(self.name))
-        .replace('DECKID', json.dumps(self.deck_id))
-        .replace('MODELS', json.dumps(models)))
-    cursor.execute(query)
+    cursor.execute(APKG_COL, [self.name, self.deck_id, json.dumps(models)])
 
     for note in self.notes:
       note.write_to_db(cursor, now_ts, self.deck_id)
