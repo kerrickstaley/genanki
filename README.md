@@ -37,7 +37,7 @@ my_model = genanki.Model(
       'qfmt': '{{Question}}',
       'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
     },
-  })
+  ])
 ```
 
 This note-type has two fields and one card. The card displays the `Question` field on the front and the `Question` and
