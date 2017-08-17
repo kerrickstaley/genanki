@@ -243,12 +243,65 @@ class Note:
     return ' ' + ' '.join(self.tags) + ' '
 
 
+class OptionsGroup:
+  def __init__(self, options_id=1, name='Default'):
+    self.options_id = options_id
+    self.options_group_name = name
+    #   General.
+    self.max_time_per_answer = 60
+    self.show_timer = False # 'false'
+    self.autoplay_audio = True
+    self.replay_audio_for_answer = True
+    #   New.
+    self.new_steps = [1, 10]
+    self.order = 1
+    self.new_cardsperday = 20
+    self.graduating_interval = 1
+    self.easy_interval = 4
+    self.starting_ease = 2500
+    self.new_bury_related_cards = True # 'true'
+    #   Reviews.
+    self.max_reviews_per_day = 100
+    self.easy_bonus = 1.3
+    self.interval_modifier = 1
+    self.max_interval = 36500
+    self.review_bury_related_cards = True
+    #   Lapses.
+    self.lapse_steps = [10]
+    self.leech_interval_multiplier = 0
+    self.lapse_min_interval = 1
+    self.leech_threshold = 8
+    self.leech_action = 0
+
+    # Used for adding arbitrary options via JSON string. Useful for
+    # addons.
+    self.misc = ''
+
+  def validate(self):
+    if self.misc and self.misc[-1] != ',':
+      self.misc += ','
+
+  def _format_fields(self):
+    self.validate()
+    fields = {}
+    for key, value in self.__dict__.items():
+      if key.startswith('__') or callable(key):
+        continue
+      if type(value) is bool:
+        fields[key] = str(value).lower()
+      else:
+        fields[key] = str(value)
+    return fields
+
+
 class Deck:
-  def __init__(self, deck_id=None, name=None):
+  def __init__(self, deck_id=None, name=None, options=None):
     self.deck_id = deck_id
     self.name = name
     self.notes = []
     self.models = {}  # map of model id to model
+    self.description = ''
+    self.options = options
 
   def add_note(self, note):
     self.notes.append(note)
@@ -261,7 +314,16 @@ class Deck:
       self.add_model(note.model)
     models = {model.model_id: model.to_json(now_ts, self.deck_id) for model in self.models.values()}
 
-    cursor.execute(APKG_COL, [self.name, self.deck_id, json.dumps(models)])
+    params = self.options._format_fields()
+
+    params.update({
+      'name': self.name,
+      'deck_id': self.deck_id,
+      'models': json.dumps(models),
+      'description': self.description,
+    })
+
+    cursor.execute(APKG_COL, params)
 
     for note in self.notes:
       note.write_to_db(cursor, now_ts, self.deck_id)

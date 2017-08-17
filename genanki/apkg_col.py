@@ -25,7 +25,7 @@ INSERT INTO col VALUES(
         "sortType": "noteFld",
         "timeLim": 0
     }',
-    ?3,
+    :models,
     '{
         "1": {
             "collapsed": false,
@@ -55,78 +55,73 @@ INSERT INTO col VALUES(
             ],
             "usn": 0
         },
-        "' || ?2 || '": {
+        "' || :deck_id || '": {
             "collapsed": false,
-            "conf": 1,
-            "desc": "",
+            "conf": ' || :options_id || ',
+            "desc": "' || :description || '",
             "dyn": 0,
-            "extendNew": 0,
+            "extendNew": 10,
             "extendRev": 50,
-            "id": ' || ?2 || ',
+            "id": ' || :deck_id || ',
             "lrnToday": [
-                163,
-                2
+                5,
+                0
             ],
             "mod": 1425278051,
-            "name": "' || ?1 || '",
+            "name": "' || :name || '",
             "newToday": [
-                163,
-                2
+                5,
+                0
             ],
             "revToday": [
-                163,
+                5,
                 0
             ],
             "timeToday": [
-                163,
-                23598
+                5,
+                0
             ],
             "usn": -1
         }
     }',
     '{
-        "1": {
-            "autoplay": true,
-            "id": 1,
+        "' || :options_id || '": {
+            "autoplay": ' || :autoplay_audio || ',
+            "id": ' || :options_id || ',
             "lapse": {
-                "delays": [
-                    10
-                ],
-                "leechAction": 0,
-                "leechFails": 8,
-                "minInt": 1,
-                "mult": 0
+                "delays": ' || :lapse_steps || ',
+                "leechAction": ' || :leech_action || ',
+                "leechFails": ' || :leech_threshold || ',
+                "minInt": ' || :lapse_min_interval || ',
+                "mult": ' || :leech_interval_multiplier || '
             },
-            "maxTaken": 60,
+            "maxTaken": ' || :max_time_per_answer || ',
             "mod": 0,
-            "name": "Default",
+            "name": "' || :options_group_name || '",
             "new": {
-                "bury": true,
-                "delays": [
-                    1,
-                    10
-                ],
-                "initialFactor": 2500,
+                "bury": ' || :new_bury_related_cards || ',
+                "delays": ' || :new_steps || ',
+                "initialFactor": ' || :starting_ease || ',
                 "ints": [
-                    1,
-                    4,
+                    ' || :graduating_interval || ',
+                    ' || :easy_interval || ',
                     7
                 ],
-                "order": 1,
-                "perDay": 20,
+                "order": ' || :order || ',
+                "perDay": ' || :new_cardsperday || ',
                 "separate": true
             },
-            "replayq": true,
+            "replayq": ' || :replay_audio_for_answer || ',
             "rev": {
-                "bury": true,
-                "ease4": 1.3,
+                "bury": ' || :review_bury_related_cards || ',
+                "ease4": ' || :easy_bonus || ',
                 "fuzz": 0.05,
-                "ivlFct": 1,
-                "maxIvl": 36500,
+                "ivlFct": ' || :interval_modifier || ',
+                "maxIvl": ' || :max_interval || ',
                 "minSpace": 1,
-                "perDay": 100
+                "perDay": ' || :max_reviews_per_day || '
             },
-            "timer": 0,
+            "timer": ' || :show_timer || ',
             "usn": 0
         }
     }',
