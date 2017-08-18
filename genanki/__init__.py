@@ -163,7 +163,7 @@ class Card:
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
         note_id,    # nid - note ID
         deck_id,    # did - deck ID
-        self.ord,   # ord - which card template it corresponds
+        self.ord,   # ord - which card template it corresponds to
         now_ts,     # mod - modification time as epoch seconds
         -1,         # usn - value of -1 indicates need to push to server
         level,      # type - 0=new, 1=learning, 2=review
@@ -258,7 +258,7 @@ class Note:
 
 
 class OptionsGroup:
-  def __init__(self, options_id=1, name='Default'):
+  def __init__(self, options_id=None, name=None):
     self.options_id = options_id
     self.options_group_name = name
     #   General.
@@ -269,7 +269,7 @@ class OptionsGroup:
     #   New.
     self.new_steps = [1, 10]
     self.order = 1
-    self.new_cardsperday = 20
+    self.new_cards_per_day = 20
     self.graduating_interval = 1
     self.easy_interval = 4
     self.starting_ease = 2500
@@ -315,7 +315,7 @@ class Deck:
     self.notes = []
     self.models = {}  # map of model id to model
     self.description = ''
-    self.options = options
+    self.options = options if options else OptionsGroup()
     self.creation_time = datetime.now()
 
   def add_note(self, note):

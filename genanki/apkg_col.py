@@ -86,8 +86,8 @@ INSERT INTO col VALUES(
     }',
     '{
         "' || :options_id || '": {
-            "autoplay": ' || :autoplay_audio || ',
             "id": ' || :options_id || ',
+            "autoplay": ' || :autoplay_audio || ',
             "lapse": {
                 "delays": ' || :lapse_steps || ',
                 "leechAction": ' || :leech_action || ',
@@ -108,7 +108,7 @@ INSERT INTO col VALUES(
                     7
                 ],
                 "order": ' || :order || ',
-                "perDay": ' || :new_cardsperday || ',
+                "perDay": ' || :new_cards_per_day || ',
                 "separate": true
             },
             "replayq": ' || :replay_audio_for_answer || ',
