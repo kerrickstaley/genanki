@@ -332,8 +332,8 @@ class Deck:
     params = self.options._format_fields()
 
     params.update({
-      'creation_time': self.creation_time.timestamp(),
-      'modification_time': self.creation_time.timestamp() * 1000,
+      'creation_time': int(self.creation_time.timestamp()),
+      'modification_time': int(self.creation_time.timestamp()) * 1000,
       'name': self.name,
       'deck_id': self.deck_id,
       'models': json.dumps(models),
