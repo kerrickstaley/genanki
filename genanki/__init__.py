@@ -1,7 +1,8 @@
 from cached_property import cached_property
 from copy import copy
-import json
+from datetime import datetime
 import hashlib
+import json
 import os
 import pystache
 import sqlite3
@@ -155,25 +156,30 @@ class Card:
   def __init__(self, ord_):
     self.ord = ord_
 
-  def write_to_db(self, cursor, now_ts, deck_id, note_id):
+    self.interval = 0
+
+  def write_to_db(self, cursor, now_ts, deck_id, note_id,
+                  level, due, interval, ease, reps_til_grad):
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
-        note_id,    # nid
-        deck_id,    # did
-        self.ord,   # ord
-        now_ts,     # mod
-        -1,         # usn
-        0,          # type (=0 for non-Cloze)
-        0,          # queue
-        0,          # due
-        0,          # ivl
-        0,          # factor
-        0,          # reps
-        0,          # lapses
-        0,          # left
-        0,          # odue
-        0,          # odid
-        0,          # flags
-        "",         # data
+        note_id,    # nid - note ID
+        deck_id,    # did - deck ID
+        self.ord,   # ord - which card template it corresponds
+        now_ts,     # mod - modification time as epoch seconds
+        -1,         # usn - value of -1 indicates need to push to server
+        level,      # type - 0=new, 1=learning, 2=review
+        level,      # queue - same as type unless buried
+        due,        # due - new: unused
+                    #       learning: due time as integer seconds since epoch
+                    #       review: integer days relative to deck creation
+        interval,   # ivl - positive days, negative seconds
+        ease,       # factor - integer ease factor used by SRS, 2500 = 250%
+        0,          # reps - number of reviews
+        0,          # lapses - # times card went from "answered correctly" to "answered incorrectly"
+     reps_til_grad, # left - reps left until graduation
+        0,          # odue - only used when card is in filtered deck
+        0,          # odid - only used when card is in filtered deck
+        0,          # flags - currently unused
+        "",         # data - currently unused
     ))
 
 
@@ -188,6 +194,12 @@ class Note:
     except AttributeError:
       # guid was defined as a property
       pass
+
+    self.level = 0
+    self.due = 0
+    self.interval = 0
+    self.ease = 1000
+    self.reps_til_grad = 0
 
   @property
   def sort_field(self):
@@ -234,7 +246,9 @@ class Note:
 
     note_id = cursor.lastrowid
     for card in self.cards:
-      card.write_to_db(cursor, now_ts, deck_id, note_id)
+      card.write_to_db(cursor, now_ts, deck_id, note_id,
+                       self.level, self.due, self.interval,
+                       self.ease, self.reps_til_grad)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)
@@ -249,7 +263,7 @@ class OptionsGroup:
     self.options_group_name = name
     #   General.
     self.max_time_per_answer = 60
-    self.show_timer = False # 'false'
+    self.show_timer = False
     self.autoplay_audio = True
     self.replay_audio_for_answer = True
     #   New.
@@ -259,7 +273,7 @@ class OptionsGroup:
     self.graduating_interval = 1
     self.easy_interval = 4
     self.starting_ease = 2500
-    self.new_bury_related_cards = True # 'true'
+    self.new_bury_related_cards = True
     #   Reviews.
     self.max_reviews_per_day = 100
     self.easy_bonus = 1.3
@@ -302,6 +316,7 @@ class Deck:
     self.models = {}  # map of model id to model
     self.description = ''
     self.options = options
+    self.creation_time = datetime.now()
 
   def add_note(self, note):
     self.notes.append(note)
@@ -317,6 +332,8 @@ class Deck:
     params = self.options._format_fields()
 
     params.update({
+      'creation_time': self.creation_time.timestamp(),
+      'modification_time': self.creation_time.timestamp() * 1000,
       'name': self.name,
       'deck_id': self.deck_id,
       'models': json.dumps(models),

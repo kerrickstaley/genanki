@@ -1,9 +1,9 @@
 APKG_COL = r'''
 INSERT INTO col VALUES(
     null,
-    1411124400,
-    1425279151694,
-    1425279151690,
+    :creation_time,
+    :modification_time,
+    :modification_time,
     11,
     0,
     0,
@@ -15,7 +15,7 @@ INSERT INTO col VALUES(
         "addToCur": true,
         "collapseTime": 1200,
         "curDeck": 1,
-        "curModel": "1425279151691",
+        "curModel": "' || :modification_time || '",
         "dueCounts": true,
         "estTimes": true,
         "newBury": true,
