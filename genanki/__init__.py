@@ -159,15 +159,15 @@ class Card:
     self.interval = 0
 
   def write_to_db(self, cursor, now_ts, deck_id, note_id,
-                  level, due, interval, ease, reps_til_grad):
+                  stage, due, interval, ease, reps_til_grad):
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
         note_id,    # nid - note ID
         deck_id,    # did - deck ID
         self.ord,   # ord - which card template it corresponds to
         now_ts,     # mod - modification time as epoch seconds
         -1,         # usn - value of -1 indicates need to push to server
-        level,      # type - 0=new, 1=learning, 2=review
-        level,      # queue - same as type unless buried
+        stage,      # type - 0=new, 1=learning, 2=review
+        stage,      # queue - same as type unless buried
         due,        # due - new: unused
                     #       learning: due time as integer seconds since epoch
                     #       review: integer days relative to deck creation
@@ -195,10 +195,10 @@ class Note:
       # guid was defined as a property
       pass
 
-    self.level = 0
+    self.stage = 0
     self.due = 0
     self.interval = 0
-    self.ease = 1000
+    self.ease = 0
     self.reps_til_grad = 0
 
   @property
@@ -247,7 +247,7 @@ class Note:
     note_id = cursor.lastrowid
     for card in self.cards:
       card.write_to_db(cursor, now_ts, deck_id, note_id,
-                       self.level, self.due, self.interval,
+                       self.stage, self.due, self.interval,
                        self.ease, self.reps_til_grad)
 
   def _format_fields(self):
