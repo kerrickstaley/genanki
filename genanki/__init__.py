@@ -315,7 +315,7 @@ class Deck:
     self.notes = []
     self.models = {}  # map of model id to model
     self.description = ''
-    self.options = options if options else OptionsGroup()
+    self.options = options or OptionsGroup()
     self.creation_time = datetime.now()
 
   def add_note(self, note):
