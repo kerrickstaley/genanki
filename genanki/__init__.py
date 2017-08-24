@@ -164,12 +164,12 @@ class Card:
         note_id,    # nid - note ID
         deck_id,    # did - deck ID
         self.ord,   # ord - which card template it corresponds to
-        now_ts,     # mod - modification time as epoch seconds
+        now_ts,     # mod - modification time as seconds since Unix epoch
         -1,         # usn - value of -1 indicates need to push to server
         stage,      # type - 0=new, 1=learning, 2=review
         stage,      # queue - same as type unless buried
         due,        # due - new: unused
-                    #       learning: due time as integer seconds since epoch
+                    #       learning: due time as integer seconds since Unix epoch
                     #       review: integer days relative to deck creation
         interval,   # ivl - positive days, negative seconds
         ease,       # factor - integer ease factor used by SRS, 2500 = 250%
@@ -195,10 +195,24 @@ class Note:
       # guid was defined as a property
       pass
 
+    ## Options ##
+
+    """SRS learning stage.
+    0 = new, 1 = learning, 2 = review."""
     self.stage = 0
+    """Behavior depends on learning stage of note.
+       new: unused.
+       learning: due time as integer seconds since Unix epoch.
+       review: integer days relative to deck creation timestamp."""
     self.due = 0
+    """Time between next review and the one following.
+    Positive values are in days, negative in seconds."""
     self.interval = 0
+    """Integer 'ease' factor used by SRS algorithm.
+    Example: 2500 = 250%."""
     self.ease = 0
+    """Repititions remaining until graduation from the learning stage.
+    Unused during other SRS stages."""
     self.reps_til_grad = 0
 
   @property
@@ -261,26 +275,27 @@ class OptionsGroup:
   def __init__(self, options_id=None, name=None):
     self.options_id = options_id
     self.options_group_name = name
-    #   General.
-    self.max_time_per_answer = 60
+    # Organized according to options window tabs in Anki.
+    ## General ##
+    self.max_time_per_answer = 60 # minutes
     self.show_timer = False
     self.autoplay_audio = True
     self.replay_audio_for_answer = True
-    #   New.
-    self.new_steps = [1, 10]
-    self.order = 1
-    self.new_cards_per_day = 20
-    self.graduating_interval = 1
-    self.easy_interval = 4
-    self.starting_ease = 2500
-    self.new_bury_related_cards = True
-    #   Reviews.
+    ## New Cards ##
+    self.new_steps = [1, 10]     # list of minute intervals per learning stage
+    self.order = 1               # option selected in dropdown (0 = first, 1 = second)
+    self.new_cards_per_day = 20  # days
+    self.graduating_interval = 1 # days
+    self.easy_interval = 4       # days
+    self.starting_ease = 2500    # 2500 = 250%
+    self.bury_related_new_cards = True
+    ## Reviews ##
     self.max_reviews_per_day = 100
     self.easy_bonus = 1.3
-    self.interval_modifier = 1
-    self.max_interval = 36500
-    self.review_bury_related_cards = True
-    #   Lapses.
+    self.interval_modifier = 1.0
+    self.max_interval = 36500 # days
+    self.bury_related_review_cards = True
+    ## Lapses ##
     self.lapse_steps = [10]
     self.leech_interval_multiplier = 0
     self.lapse_min_interval = 1
@@ -312,11 +327,11 @@ class Deck:
   def __init__(self, deck_id=None, name=None, options=None):
     self.deck_id = deck_id
     self.name = name
+    self.description = ''
+    self.creation_time = datetime.now()
     self.notes = []
     self.models = {}  # map of model id to model
-    self.description = ''
     self.options = options or OptionsGroup()
-    self.creation_time = datetime.now()
 
   def add_note(self, note):
     self.notes.append(note)
