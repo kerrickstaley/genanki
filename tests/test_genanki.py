@@ -103,7 +103,8 @@ class TestWithCollection:
     importer.run()
 
   def test_generated_deck_can_be_imported(self):
-    deck = genanki.Deck(123456, 'foodeck')
+    options = genanki.OptionsGroup(654321, 'foooptions')
+    deck = genanki.Deck(123456, 'foodeck', options)
     note = genanki.Note(TEST_MODEL, ['a', 'b'])
     deck.add_note(note)
 
@@ -121,7 +122,8 @@ class TestWithCollection:
 
     Catches a bug that was fixed in 08d8a139.
     """
-    deck = genanki.Deck(123456, 'foodeck')
+    options = genanki.OptionsGroup(654321, 'foooptions')
+    deck = genanki.Deck(123456, 'foodeck', options)
     deck.add_note(genanki.Note(TEST_CN_MODEL, ['a', 'b', 'c']))  # 2 cards
     deck.add_note(genanki.Note(TEST_CN_MODEL, ['d', 'e', 'f']))  # 2 cards
     deck.add_note(genanki.Note(TEST_CN_MODEL, ['g', 'h', 'i']))  # 2 cards
@@ -135,7 +137,8 @@ class TestWithCollection:
 
   def test_card_isEmpty__with_2_fields__succeeds(self):
     """Tests for a bug in an early version of genanki where notes with <4 fields were not supported."""
-    deck = genanki.Deck(123456, 'foodeck')
+    options = genanki.OptionsGroup(654321, 'foooptions')
+    deck = genanki.Deck(123456, 'foodeck', options)
     note = genanki.Note(TEST_MODEL, ['a', 'b'])
     deck.add_note(note)
 
@@ -192,7 +195,8 @@ class TestWithCollection:
     # change to a scratch directory so we can write files
     os.chdir(tempfile.mkdtemp())
 
-    deck = genanki.Deck(123456, 'foodeck')
+    options = genanki.OptionsGroup(654321, 'foooptions')
+    deck = genanki.Deck(123456, 'foodeck', options)
     note = genanki.Note(TEST_MODEL, [
       'question [sound:present.mp3] [sound:missing.mp3]',
       'answer <img src="present.jpg"> <img src="missing.jpg">'])
