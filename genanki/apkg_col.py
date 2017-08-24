@@ -99,7 +99,7 @@ INSERT INTO col VALUES(
             "mod": 0,
             "name": "' || :options_group_name || '",
             "new": {
-                "bury": ' || :new_bury_related_cards || ',
+                "bury": ' || :bury_related_new_cards || ',
                 "delays": ' || :new_steps || ',
                 "initialFactor": ' || :starting_ease || ',
                 "ints": [
@@ -113,7 +113,7 @@ INSERT INTO col VALUES(
             },
             "replayq": ' || :replay_audio_for_answer || ',
             "rev": {
-                "bury": ' || :review_bury_related_cards || ',
+                "bury": ' || :bury_related_review_cards || ',
                 "ease4": ' || :easy_bonus || ',
                 "fuzz": 0.05,
                 "ivlFct": ' || :interval_modifier || ',
