@@ -159,7 +159,7 @@ class Card:
     self.interval = 0
 
   def write_to_db(self, cursor, now_ts, deck_id, note_id,
-                  stage, due, interval, ease, reps_til_grad):
+                  stage, queue, due, interval, ease, reps_til_grad):
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
         note_id,    # nid - note ID
         deck_id,    # did - deck ID
@@ -167,7 +167,8 @@ class Card:
         now_ts,     # mod - modification time as seconds since Unix epoch
         -1,         # usn - value of -1 indicates need to push to server
         stage,      # type - 0=new, 1=learning, 2=review
-        stage,      # queue - same as type unless buried
+        queue,      # queue - same as type, but
+                    #         -1=suspended, -2=user buried, -3=sched buried
         due,        # due - new: unused
                     #       learning: due time as integer seconds since Unix epoch
                     #       review: integer days relative to deck creation
@@ -200,6 +201,9 @@ class Note:
     """SRS learning stage.
     0 = new, 1 = learning, 2 = review."""
     self.stage = 0
+    """SRS queue status modifiers.
+    0 = normal, 1 = suspended, 2 = user buried, 3 = scheduler buried"""
+    self.status = 0
     """Behavior depends on learning stage of note.
        new: unused.
        learning: due time as integer seconds since Unix epoch.
@@ -259,9 +263,10 @@ class Note:
     ))
 
     note_id = cursor.lastrowid
+    queue = -self.status if self.status else self.stage
     for card in self.cards:
       card.write_to_db(cursor, now_ts, deck_id, note_id,
-                       self.stage, self.due, self.interval,
+                       self.stage, queue, self.due, self.interval,
                        self.ease, self.reps_til_grad)
 
   def _format_fields(self):
