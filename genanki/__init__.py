@@ -152,8 +152,8 @@ class Model:
 
 
 class Card:
-  def __init__(self, ord_):
-    self.ord = ord_
+  def __init__(self, ord):
+    self.ord = ord
 
   def write_to_db(self, cursor, now_ts, deck_id, note_id):
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
