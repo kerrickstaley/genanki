@@ -203,8 +203,8 @@ class CardOptions:
 
 
 class Card:
-  def __init__(self, ord_, options=None):
-    self.ord = ord_
+  def __init__(self, ord, options=None):
+    self.ord = ord
     self.options = options or CardOptions()
 
   def write_to_db(self, cursor, now_ts, deck_id, note_id):
