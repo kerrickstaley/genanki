@@ -152,35 +152,88 @@ class Model:
     }
 
 
+class CardOptions:
+  def __init__(self, stage=0, status=0, due=0, interval=0,
+               ease_factor=0, reps_left_til_grad=0):
+    """SRS learning stage.
+    0 = new, 1 = learning, 2 = review."""
+    self.type = stage
+    """SRS queue status modifiers.
+    0 = normal, 1 = suspended, 2 = user buried, 3 = scheduler buried"""
+    self.status = status
+    """Behavior depends on learning stage of note.
+       new: unused.
+       learning: due time as integer seconds since Unix epoch.
+       review: integer days relative to deck creation timestamp."""
+    self.due = due
+    """Time between next review and the one following.
+    Positive values are in days, negative in seconds."""
+    self.ivl = interval
+    """Integer 'ease' factor used by SRS algorithm.
+    Example: 2500 = 250%."""
+    self.factor = ease_factor
+    """Repititions remaining until graduation from the learning stage.
+    Unused during other SRS stages."""
+    self.left = reps_left_til_grad
+
+  @property
+  def stage(self):
+    return self.type
+  @stage.setter
+  def stage(self, value):
+    self.type = value
+  @property
+  def interval(self):
+    return self.ivl
+  @interval.setter
+  def interval(self, value):
+    self.ivl = value
+  @property
+  def ease_factor(self):
+    return self.factor
+  @ease_factor.setter
+  def ease_factor(self, value):
+    self.factor = value
+  @property
+  def reps_left_til_grad(self):
+    return self.left
+  @reps_left_til_grad.setter
+  def reps_left_til_grad(self, value):
+    self.left = value
+
+
 class Card:
-  def __init__(self, ord_):
+  def __init__(self, ord_, options=None):
     self.ord = ord_
+    self.options = options or CardOptions()
 
-    self.interval = 0
+  def write_to_db(self, cursor, now_ts, deck_id, note_id):
+    if self.options.status:
+      queue = -self.options.status
+    else:
+      queue = self.options.type
 
-  def write_to_db(self, cursor, now_ts, deck_id, note_id,
-                  stage, queue, due, interval, ease, reps_til_grad):
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
-        note_id,    # nid - note ID
-        deck_id,    # did - deck ID
-        self.ord,   # ord - which card template it corresponds to
-        now_ts,     # mod - modification time as seconds since Unix epoch
-        -1,         # usn - value of -1 indicates need to push to server
-        stage,      # type - 0=new, 1=learning, 2=review
-        queue,      # queue - same as type, but
-                    #         -1=suspended, -2=user buried, -3=sched buried
-        due,        # due - new: unused
-                    #       learning: due time as integer seconds since Unix epoch
-                    #       review: integer days relative to deck creation
-        interval,   # ivl - positive days, negative seconds
-        ease,       # factor - integer ease factor used by SRS, 2500 = 250%
-        0,          # reps - number of reviews
-        0,          # lapses - # times card went from "answered correctly" to "answered incorrectly"
-     reps_til_grad, # left - reps left until graduation
-        0,          # odue - only used when card is in filtered deck
-        0,          # odid - only used when card is in filtered deck
-        0,          # flags - currently unused
-        "",         # data - currently unused
+      note_id,   # nid - note ID
+      deck_id,   # did - deck ID
+      self.ord,  # ord - which card template it corresponds to
+      now_ts,    # mod - modification time as seconds since Unix epoch
+      -1,        # usn - value of -1 indicates need to push to server
+      self.options.type,   # type - 0=new, 1=learning, 2=review
+      queue,     # queue - same as type, but
+                 #   -1=suspended, -2=user buried, -3=sched buried
+      self.options.due,    # due - new: unused
+                           #   learning: due time as integer seconds since Unix epoch
+                           #   review: integer days relative to deck creation
+      self.options.ivl,    # ivl - positive days, negative seconds
+      self.options.factor, # factor - integer ease factor used by SRS, 2500 = 250%
+      0,         # reps - number of reviews
+      0,         # lapses - # times card went from "answered correctly" to "answered incorrectly"
+      self.options.left,   # left - reps left until graduation
+      0,         # odue - only used when card is in filtered deck
+      0,         # odid - only used when card is in filtered deck
+      0,         # flags - currently unused
+      "",        # data - currently unused
     ))
 
 
@@ -195,29 +248,6 @@ class Note:
     except AttributeError:
       # guid was defined as a property
       pass
-
-    ## Options ##
-
-    """SRS learning stage.
-    0 = new, 1 = learning, 2 = review."""
-    self.stage = 0
-    """SRS queue status modifiers.
-    0 = normal, 1 = suspended, 2 = user buried, 3 = scheduler buried"""
-    self.status = 0
-    """Behavior depends on learning stage of note.
-       new: unused.
-       learning: due time as integer seconds since Unix epoch.
-       review: integer days relative to deck creation timestamp."""
-    self.due = 0
-    """Time between next review and the one following.
-    Positive values are in days, negative in seconds."""
-    self.interval = 0
-    """Integer 'ease' factor used by SRS algorithm.
-    Example: 2500 = 250%."""
-    self.ease = 0
-    """Repititions remaining until graduation from the learning stage.
-    Unused during other SRS stages."""
-    self.reps_til_grad = 0
 
   @property
   def sort_field(self):
@@ -248,6 +278,18 @@ class Note:
   def guid(self, val):
     self._guid = val
 
+  def set_card_options(self, options):
+    """If `options` is a single CardOptions, apply it to all cards. If
+    `options` is a list of CardOptions, apply each CardOptions to the
+    card of the same index.
+    """
+    try:
+      for i, card in enumerate(self.cards):
+        card.options = options[i]
+    except TypeError:
+      for card in self.cards:
+        card.options = options
+
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         self.guid,                    # guid
@@ -263,11 +305,8 @@ class Note:
     ))
 
     note_id = cursor.lastrowid
-    queue = -self.status if self.status else self.stage
     for card in self.cards:
-      card.write_to_db(cursor, now_ts, deck_id, note_id,
-                       self.stage, queue, self.due, self.interval,
-                       self.ease, self.reps_til_grad)
+      card.write_to_db(cursor, now_ts, deck_id, note_id)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)
@@ -277,39 +316,68 @@ class Note:
 
 
 class OptionsGroup:
-  def __init__(self, options_id=None, name=None):
+  def __init__(
+      self, options_id=None, options_group_name=None,
+      # Organized according to options window tabs in Anki.
+      ## General ##
+      max_time_per_answer = 60,     # minutes
+      show_timer = False,
+      autoplay_audio = True,
+      replay_audio_for_answer = True,
+      ## New Cards ##
+      new_steps = [1, 10],          # list of minute intervals per learning stage
+      order = 1,                    # option selected in dropdown
+                                    # (0 = first, 1 = second)
+      new_cards_per_day = 20,       # days
+      graduating_interval = 1,      # days
+      easy_interval = 4,            # days
+      starting_ease = 2500,         # 2500 = 250%
+      bury_related_new_cards = True,
+      ## Reviews ##
+      max_reviews_per_day = 100,
+      easy_bonus = 1.3,
+      interval_modifier = 1.0,
+      max_interval = 36500,    # days
+      bury_related_review_cards = True,
+      ## Lapses ##
+      lapse_steps = [10],
+      leech_interval_multiplier = 0,
+      lapse_min_interval = 1,
+      leech_threshold = 8,
+      leech_action = 0,
+      # Used for adding arbitrary options via JSON string. Useful for
+      # addons.
+      misc = ''
+  ):
     self.options_id = options_id
-    self.options_group_name = name
-    # Organized according to options window tabs in Anki.
+    self.options_group_name = options_group_name
     ## General ##
-    self.max_time_per_answer = 60 # minutes
-    self.show_timer = False
-    self.autoplay_audio = True
-    self.replay_audio_for_answer = True
+    self.max_time_per_answer = max_time_per_answer
+    self.show_timer = show_timer
+    self.autoplay_audio = autoplay_audio
+    self.replay_audio_for_answer = replay_audio_for_answer
     ## New Cards ##
-    self.new_steps = [1, 10]     # list of minute intervals per learning stage
-    self.order = 1               # option selected in dropdown (0 = first, 1 = second)
-    self.new_cards_per_day = 20  # days
-    self.graduating_interval = 1 # days
-    self.easy_interval = 4       # days
-    self.starting_ease = 2500    # 2500 = 250%
-    self.bury_related_new_cards = True
+    self.new_steps = new_steps
+    self.order = order
+    self.new_cards_per_day = new_cards_per_day
+    self.graduating_interval = graduating_interval
+    self.easy_interval = easy_interval
+    self.starting_ease = starting_ease
+    self.bury_related_new_cards = bury_related_new_cards
     ## Reviews ##
-    self.max_reviews_per_day = 100
-    self.easy_bonus = 1.3
-    self.interval_modifier = 1.0
-    self.max_interval = 36500 # days
-    self.bury_related_review_cards = True
+    self.max_reviews_per_day = max_reviews_per_day
+    self.easy_bonus = easy_bonus
+    self.interval_modifier = interval_modifier
+    self.max_interval = max_interval
+    self.bury_related_review_cards = bury_related_review_cards
     ## Lapses ##
-    self.lapse_steps = [10]
-    self.leech_interval_multiplier = 0
-    self.lapse_min_interval = 1
-    self.leech_threshold = 8
-    self.leech_action = 0
+    self.lapse_steps = lapse_steps
+    self.leech_interval_multiplier = leech_interval_multiplier
+    self.lapse_min_interval = lapse_min_interval
+    self.leech_threshold = leech_threshold
+    self.leech_action = leech_action
 
-    # Used for adding arbitrary options via JSON string. Useful for
-    # addons.
-    self.misc = ''
+    self.misc = misc
 
   def validate(self):
     if self.misc and self.misc[-1] != ',':
