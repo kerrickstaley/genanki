@@ -152,9 +152,14 @@ class Model:
     }
 
 
-class CardOptions:
-  def __init__(self, stage=0, status=0, due=0, interval=0,
+class Card:
+  def __init__(self, ord,
+               stage=0, status=0, due=0, interval=0,
                ease_factor=0, reps_left_til_grad=0):
+    self.ord = ord
+
+    ## Options ##
+
     """SRS learning stage.
     0 = new, 1 = learning, 2 = review."""
     self.type = stage
@@ -201,17 +206,11 @@ class CardOptions:
   def reps_left_til_grad(self, value):
     self.left = value
 
-
-class Card:
-  def __init__(self, ord, options=None):
-    self.ord = ord
-    self.options = options or CardOptions()
-
   def write_to_db(self, cursor, now_ts, deck_id, note_id):
-    if self.options.status:
-      queue = -self.options.status
+    if self.status:
+      queue = -self.status
     else:
-      queue = self.options.type
+      queue = self.type
 
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
       note_id,   # nid - note ID
@@ -219,17 +218,17 @@ class Card:
       self.ord,  # ord - which card template it corresponds to
       now_ts,    # mod - modification time as seconds since Unix epoch
       -1,        # usn - value of -1 indicates need to push to server
-      self.options.type,   # type - 0=new, 1=learning, 2=review
+      self.type, # type - 0=new, 1=learning, 2=review
       queue,     # queue - same as type, but
                  #   -1=suspended, -2=user buried, -3=sched buried
-      self.options.due,    # due - new: unused
-                           #   learning: due time as integer seconds since Unix epoch
-                           #   review: integer days relative to deck creation
-      self.options.ivl,    # ivl - positive days, negative seconds
-      self.options.factor, # factor - integer ease factor used by SRS, 2500 = 250%
+      self.due,  # due - new: unused
+                 #   learning: due time as integer seconds since Unix epoch
+                 #   review: integer days relative to deck creation
+      self.ivl,  # ivl - positive days, negative seconds
+      self.factor, # factor - integer ease factor used by SRS, 2500 = 250%
       0,         # reps - number of reviews
       0,         # lapses - # times card went from "answered correctly" to "answered incorrectly"
-      self.options.left,   # left - reps left until graduation
+      self.left, # left - reps left until graduation
       0,         # odue - only used when card is in filtered deck
       0,         # odid - only used when card is in filtered deck
       0,         # flags - currently unused
@@ -279,16 +278,18 @@ class Note:
     self._guid = val
 
   def set_card_options(self, options):
-    """If `options` is a single CardOptions, apply it to all cards. If
-    `options` is a list of CardOptions, apply each CardOptions to the
+    """If `options` is a single dict of field-value pairs, apply it to all
+    cards. If `options` is a list of dicts, apply each dict to the
     card of the same index.
     """
     try:
       for i, card in enumerate(self.cards):
-        card.options = options[i]
-    except TypeError:
+        for option, value in options[i].items():
+          setattr(card, option, value)
+    except KeyError:
       for card in self.cards:
-        card.options = options
+        for option, value in options.items():
+          setattr(card, option, value)
 
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
