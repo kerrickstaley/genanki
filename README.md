@@ -112,3 +112,8 @@ or implementing `sort_field` as a property in a subclass (similar to `guid`).
 ## YAML for Templates (and Fields)
 You can create your template definitions in the YAML format and pass them as a `str` to `Model()`. You can also do this
 for fields.
+
+## Using genanki inside an Anki addon
+`genanki` supports adding generated notes to the local collection when running inside an Anki 2.1 addon (Anki 2.0
+may work but has not been tested). See the [`.write_to_collection_from_addon() method`](
+https://github.com/kerrickstaley/genanki/blob/0c2cf8fea9c5e382e2fae9cd6d5eb440e267c637/genanki/__init__.py#L275).
