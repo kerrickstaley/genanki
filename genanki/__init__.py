@@ -272,6 +272,26 @@ class Deck:
     """
     Package(self).write_to_file(file)
 
+  def write_to_collection_from_addon(self):
+    """
+    Write to local collection. *Only usable when running inside an Anki addon!* Only tested on Anki 2.1.
+
+    This writes to a temporary file and then calls the code that Anki uses to import packages.
+
+    Note: the caller may want to use mw.checkpoint and mw.reset as follows:
+
+      # creates a menu item called "Undo Add Notes From MyAddon" after this runs
+      mw.checkpoint('Add Notes From MyAddon')
+      # run import
+      my_package.write_to_collection_from_addon()
+      # refreshes main view so new deck is visible
+      mw.reset()
+
+    Tip: if your deck has the same name and ID as an existing deck, then the notes will get placed in that deck rather
+    than a new deck being created.
+    """
+    Package(self).write_to_collection_from_addon()
+
 
 class Package:
   def __init__(self, deck_or_decks=None, media_files=None):
@@ -309,3 +329,28 @@ class Package:
 
     for deck in self.decks:
       deck.write_to_db(cursor, now_ts)
+
+  def write_to_collection_from_addon(self):
+    """
+    Write to local collection. *Only usable when running inside an Anki addon!* Only tested on Anki 2.1.
+
+    This writes to a temporary file and then calls the code that Anki uses to import packages.
+
+    Note: the caller may want to use mw.checkpoint and mw.reset as follows:
+
+      # creates a menu item called "Undo Add Notes From MyAddon" after this runs
+      mw.checkpoint('Add Notes From MyAddon')
+      # run import
+      my_package.write_to_collection_from_addon()
+      # refreshes main view so new deck is visible
+      mw.reset()
+
+    Tip: if your deck has the same name and ID as an existing deck, then the notes will get placed in that deck rather
+    than a new deck being created.
+    """
+    from aqt import mw  # main window
+    from anki.importing.apkg import AnkiPackageImporter
+
+    with tempfile.NamedTemporaryFile() as f:
+      self.write_to_file(f.name)
+      AnkiPackageImporter(mw.col, f.name).run()
