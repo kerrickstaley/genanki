@@ -1,7 +1,8 @@
 from cached_property import cached_property
 from copy import copy
-import json
+from datetime import datetime
 import hashlib
+import json
 import os
 import pystache
 import sqlite3
@@ -152,28 +153,86 @@ class Model:
 
 
 class Card:
-  def __init__(self, ord):
+  def __init__(self, ord,
+               stage=0, status=0, due=0, interval=0,
+               ease_factor=0, reps_left_til_grad=0):
     self.ord = ord
 
+    ## Options ##
+
+    """SRS learning stage.
+    0 = new, 1 = learning, 2 = review."""
+    self.type = stage
+    """SRS queue status modifiers.
+    0 = normal, 1 = suspended, 2 = user buried, 3 = scheduler buried"""
+    self.status = status
+    """Behavior depends on learning stage of note.
+       new: unused.
+       learning: due time as integer seconds since Unix epoch.
+       review: integer days relative to deck creation timestamp."""
+    self.due = due
+    """Time between next review and the one following.
+    Positive values are in days, negative in seconds."""
+    self.ivl = interval
+    """Integer 'ease' factor used by SRS algorithm.
+    Example: 2500 = 250%."""
+    self.factor = ease_factor
+    """Repititions remaining until graduation from the learning stage.
+    Unused during other SRS stages."""
+    self.left = reps_left_til_grad
+
+  @property
+  def stage(self):
+    return self.type
+  @stage.setter
+  def stage(self, value):
+    self.type = value
+  @property
+  def interval(self):
+    return self.ivl
+  @interval.setter
+  def interval(self, value):
+    self.ivl = value
+  @property
+  def ease_factor(self):
+    return self.factor
+  @ease_factor.setter
+  def ease_factor(self, value):
+    self.factor = value
+  @property
+  def reps_left_til_grad(self):
+    return self.left
+  @reps_left_til_grad.setter
+  def reps_left_til_grad(self, value):
+    self.left = value
+
   def write_to_db(self, cursor, now_ts, deck_id, note_id):
+    if self.status:
+      queue = -self.status
+    else:
+      queue = self.type
+
     cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
-        note_id,    # nid
-        deck_id,    # did
-        self.ord,   # ord
-        now_ts,     # mod
-        -1,         # usn
-        0,          # type (=0 for non-Cloze)
-        0,          # queue
-        0,          # due
-        0,          # ivl
-        0,          # factor
-        0,          # reps
-        0,          # lapses
-        0,          # left
-        0,          # odue
-        0,          # odid
-        0,          # flags
-        "",         # data
+      note_id,   # nid - note ID
+      deck_id,   # did - deck ID
+      self.ord,  # ord - which card template it corresponds to
+      now_ts,    # mod - modification time as seconds since Unix epoch
+      -1,        # usn - value of -1 indicates need to push to server
+      self.type, # type - 0=new, 1=learning, 2=review
+      queue,     # queue - same as type, but
+                 #   -1=suspended, -2=user buried, -3=sched buried
+      self.due,  # due - new: unused
+                 #   learning: due time as integer seconds since Unix epoch
+                 #   review: integer days relative to deck creation
+      self.ivl,  # ivl - positive days, negative seconds
+      self.factor, # factor - integer ease factor used by SRS, 2500 = 250%
+      0,         # reps - number of reviews
+      0,         # lapses - # times card went from "answered correctly" to "answered incorrectly"
+      self.left, # left - reps left until graduation
+      0,         # odue - only used when card is in filtered deck
+      0,         # odid - only used when card is in filtered deck
+      0,         # flags - currently unused
+      "",        # data - currently unused
     ))
 
 
@@ -218,6 +277,20 @@ class Note:
   def guid(self, val):
     self._guid = val
 
+  def set_card_options(self, options):
+    """If `options` is a single dict of field-value pairs, apply it to all
+    cards. If `options` is a list of dicts, apply each dict to the
+    card of the same index.
+    """
+    try:
+      for i, card in enumerate(self.cards):
+        for option, value in options[i].items():
+          setattr(card, option, value)
+    except KeyError:
+      for card in self.cards:
+        for option, value in options.items():
+          setattr(card, option, value)
+
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         self.guid,                    # guid
@@ -243,12 +316,96 @@ class Note:
     return ' ' + ' '.join(self.tags) + ' '
 
 
+class OptionsGroup:
+  def __init__(
+      self, options_id=None, options_group_name=None,
+      # Organized according to options window tabs in Anki.
+      ## General ##
+      max_time_per_answer = 60,     # minutes
+      show_timer = False,
+      autoplay_audio = True,
+      replay_audio_for_answer = True,
+      ## New Cards ##
+      new_steps = [1, 10],          # list of minute intervals per learning stage
+      order = 1,                    # option selected in dropdown
+                                    # (0 = first, 1 = second)
+      new_cards_per_day = 20,       # days
+      graduating_interval = 1,      # days
+      easy_interval = 4,            # days
+      starting_ease = 2500,         # 2500 = 250%
+      bury_related_new_cards = True,
+      ## Reviews ##
+      max_reviews_per_day = 100,
+      easy_bonus = 1.3,
+      interval_modifier = 1.0,
+      max_interval = 36500,    # days
+      bury_related_review_cards = True,
+      ## Lapses ##
+      lapse_steps = [10],
+      leech_interval_multiplier = 0,
+      lapse_min_interval = 1,
+      leech_threshold = 8,
+      leech_action = 0,
+      # Used for adding arbitrary options via JSON string. Useful for
+      # addons.
+      misc = ''
+  ):
+    self.options_id = options_id
+    self.options_group_name = options_group_name
+    ## General ##
+    self.max_time_per_answer = max_time_per_answer
+    self.show_timer = show_timer
+    self.autoplay_audio = autoplay_audio
+    self.replay_audio_for_answer = replay_audio_for_answer
+    ## New Cards ##
+    self.new_steps = new_steps
+    self.order = order
+    self.new_cards_per_day = new_cards_per_day
+    self.graduating_interval = graduating_interval
+    self.easy_interval = easy_interval
+    self.starting_ease = starting_ease
+    self.bury_related_new_cards = bury_related_new_cards
+    ## Reviews ##
+    self.max_reviews_per_day = max_reviews_per_day
+    self.easy_bonus = easy_bonus
+    self.interval_modifier = interval_modifier
+    self.max_interval = max_interval
+    self.bury_related_review_cards = bury_related_review_cards
+    ## Lapses ##
+    self.lapse_steps = lapse_steps
+    self.leech_interval_multiplier = leech_interval_multiplier
+    self.lapse_min_interval = lapse_min_interval
+    self.leech_threshold = leech_threshold
+    self.leech_action = leech_action
+
+    self.misc = misc
+
+  def validate(self):
+    if self.misc and self.misc[-1] != ',':
+      self.misc += ','
+
+  def _format_fields(self):
+    self.validate()
+    fields = {}
+    for key, value in self.__dict__.items():
+      if key.startswith('__') or callable(key):
+        continue
+      if type(value) is bool:
+        fields[key] = str(value).lower()
+      else:
+        fields[key] = str(value)
+    return fields
+
+
 class Deck:
-  def __init__(self, deck_id=None, name=None):
+  def __init__(self, deck_id=None, name=None, options=None):
     self.deck_id = deck_id
     self.name = name
+    self.description = ''
+    self.creation_time = datetime.now()
     self.notes = []
     self.models = {}  # map of model id to model
+    self.options = options or OptionsGroup()
 
   def add_note(self, note):
     self.notes.append(note)
@@ -261,7 +418,18 @@ class Deck:
       self.add_model(note.model)
     models = {model.model_id: model.to_json(now_ts, self.deck_id) for model in self.models.values()}
 
-    cursor.execute(APKG_COL, [self.name, self.deck_id, json.dumps(models)])
+    params = self.options._format_fields()
+
+    params.update({
+      'creation_time': int(self.creation_time.timestamp()),
+      'modification_time': int(self.creation_time.timestamp()) * 1000,
+      'name': self.name,
+      'deck_id': self.deck_id,
+      'models': json.dumps(models),
+      'description': self.description,
+    })
+
+    cursor.execute(APKG_COL, params)
 
     for note in self.notes:
       note.write_to_db(cursor, now_ts, self.deck_id)

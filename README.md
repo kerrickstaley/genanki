@@ -109,6 +109,35 @@ interface. Anki also is happier if you avoid having two notes with the same `sor
 necessary. By default, the `sort_field` is the first field, but you can change it by passing `sort_field=` to `Note()`
 or implementing `sort_field` as a property in a subclass (similar to `guid`).
 
+## Deck and Note Options
+`Deck`s and `Note`s have options, many of which influence the Anki SRS algorithm. These can change when and how often cards are due, how leech cards are handled, how cards transition between SRS stages, and more.
+
+Deck options are primarily provided through the `OptionGroup` which is closely modeled after the Anki deck options window. In addition, the `Deck` has `description` and `creation_time` attributes. Note that Anki defines card due dates relative to deck creation time.
+
+``` python
+options = genanki.OptionsGroup()
+options.autoplay_audio = False
+options.new_cards_per_day = 10
+options.max_reviews_per_day = 200
+options.review_bury_related_cards = False
+options.interval_modifier = 0.85
+my_deck = genanki.Deck(
+  2059400110,
+  'Country Capitals',
+  options=options)
+my_deck.description = r'The capitals of the 100 most populous countries. \nCreated on {}.'.format(deck.creation_time.date().isoformat())
+```
+
+`Note` options typically vary significantly across notes and are thus set directly in the note.
+
+``` python
+my_note.stage = 1     # SRS learning stage: 0 = new, 1 = learning, 2 = review.
+my_note.interval = 20 # Days between next review and the one following.
+```
+
+Decks and notes have more options which are documented in `genanki/__init__.py`. For full details on their meaning and relation to the Anki SRS algorithm, please see the [official Anki documentation](https://apps.ankiweb.net/docs/manual.html#what-spaced-repetition-algorithm-does-anki-use).
+
+
 ## YAML for Templates (and Fields)
 You can create your template definitions in the YAML format and pass them as a `str` to `Model()`. You can also do this
 for fields.
