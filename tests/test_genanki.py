@@ -229,3 +229,17 @@ class TestWithCollection:
 
     with pytest.raises(TypeError):
       deck.write_to_file('foodeck.apkg')
+
+  def test_card_suspend(self):
+    deck = genanki.Deck(123456, 'foodeck')
+    note = genanki.Note(model=TEST_CN_MODEL, fields=['中國', '中国', 'China'])
+    assert len(note.cards) == 2
+
+    note.cards[1].suspend = True
+
+    deck.add_note(note)
+
+    self.import_package(genanki.Package(deck))
+
+    assert self.col.findCards('') == [1, 2]
+    assert self.col.findCards('is:suspended') == [2]
