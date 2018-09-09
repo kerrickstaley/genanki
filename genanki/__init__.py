@@ -358,6 +358,6 @@ class Package:
     from aqt import mw  # main window
     from anki.importing.apkg import AnkiPackageImporter
 
-    with tempfile.NamedTemporaryFile() as f:
-      self.write_to_file(f.name)
-      AnkiPackageImporter(mw.col, f.name).run()
+    tmpfilename = tempfile.NamedTemporaryFile(delete=False).name
+    self.write_to_file(tmpfilename)
+    AnkiPackageImporter(mw.col, tmpfilename).run()
