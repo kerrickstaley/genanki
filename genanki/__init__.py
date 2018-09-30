@@ -13,7 +13,7 @@ import zipfile
 from .apkg_col import APKG_COL
 from .apkg_schema import APKG_SCHEMA
 
-__version__ = '0.6.2'
+from .version import __version__
 
 BASE91_TABLE = [
   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',

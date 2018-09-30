@@ -1,8 +1,11 @@
 from setuptools import setup
-from genanki import __version__
+
+version = {}
+with open('genanki/version.py') as fp:
+  exec(fp.read(), version)
 
 setup(name='genanki',
-      version=__version__,
+      version=version['__version__'],
       description='Generate Anki decks programmatically',
       url='http://github.com/kerrickstaley/genanki',
       author='Kerrick Staley',
