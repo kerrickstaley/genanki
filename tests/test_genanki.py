@@ -210,26 +210,6 @@ class TestWithCollection:
     missing, unused, invalid = self.col.media.check()
     assert set(missing) == {'missing.mp3', 'missing.jpg'}
 
-  def test_write_deck_without_deck_id_fails(self):
-    # change to a scratch directory so we can write files
-    os.chdir(tempfile.mkdtemp())
-
-    deck = genanki.Deck()
-    deck.name = 'foodeck'
-
-    with pytest.raises(TypeError):
-      deck.write_to_file('foodeck.apkg')
-
-  def test_write_deck_without_name_fails(self):
-    # change to a scratch directory so we can write files
-    os.chdir(tempfile.mkdtemp())
-
-    deck = genanki.Deck()
-    deck.deck_id = 123456
-
-    with pytest.raises(TypeError):
-      deck.write_to_file('foodeck.apkg')
-
   def test_card_suspend(self):
     deck = genanki.Deck(123456, 'foodeck')
     note = genanki.Note(model=TEST_CN_MODEL, fields=['中國', '中国', 'China'])
