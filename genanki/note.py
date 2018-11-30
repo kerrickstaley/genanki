@@ -48,7 +48,7 @@ class Note:
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         self.guid,                    # guid
-        self.model.model_id,          # mid
+        self.model.id,          # mid
         now_ts,                       # mod
         -1,                           # usn
         self._format_tags(),          # TODO tags

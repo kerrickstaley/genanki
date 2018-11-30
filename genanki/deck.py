@@ -1,11 +1,11 @@
 
 import json
 
-from .apkg_col import APKG_COL
+from . import db
 
 class Deck:
-  def __init__(self, deck_id=None, name=None):
-    self.deck_id = deck_id
+  def __init__(self, id: int, name: str):
+    self.id = id
     self.name = name
     self.notes = []
     self.models = {}  # map of model id to model
@@ -14,22 +14,52 @@ class Deck:
     self.notes.append(note)
 
   def add_model(self, model):
-    self.models[model.model_id] = model
+    self.models[model.id] = model
 
-  def write_to_db(self, cursor, now_ts):
-    if not isinstance(self.deck_id, int):
-      raise TypeError('Deck .deck_id must be an integer, not {}.'.format(self.deck_id))
-    if not isinstance(self.name, str):
-      raise TypeError('Deck .name must be a string, not {}.'.format(self.name))
-
+  def update_models(self):
     for note in self.notes:
       self.add_model(note.model)
-    models = {model.model_id: model.to_json(now_ts, self.deck_id) for model in self.models.values()}
 
-    cursor.execute(APKG_COL, [self.name, self.deck_id, json.dumps(models)])
+  def to_dict(self):
+    return {
+      'collapsed': True,
+      'conf': 1,
+      'desc': '',
+      'dyn': 0,
+      'extendNew': 0,
+      'extendRev': 50,
+      'id': self.id,
+      'lrnToday': [
+        163,
+        2
+      ],
+      'mod': 1425278051,
+      'name': self.name,
+      'newToday': [
+        163,
+        2
+      ],
+      'revToday': [
+          163,
+          0
+      ],
+      'timeToday': [
+        163,
+        23598
+      ],
+      'usn': -1
+    }
+
+  def write_to_db(self, cursor, now_ts):
+    self.update_models()
+
+    for model in self.models.values():
+      db.add_model(cursor, model, self.id)
+
+    db.add_deck(cursor, self)
 
     for note in self.notes:
-      note.write_to_db(cursor, now_ts, self.deck_id)
+      note.write_to_db(cursor, now_ts, self.id)
 
   def write_to_file(self, file):
     """
