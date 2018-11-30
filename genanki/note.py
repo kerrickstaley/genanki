@@ -1,6 +1,9 @@
 
 from cached_property import cached_property
 
+from .card import Card
+from .util import guid_for
+
 class Note:
   def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
     self.model = model
