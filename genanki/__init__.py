@@ -275,7 +275,7 @@ class Deck:
     for note in self.notes:
       note.write_to_db(cursor, now_ts, self.deck_id)
 
-  def write_to_file(self, file, media_path=''):
+  def write_to_file(self, file, media_path='.'):
     """
     Write this deck to a .apkg file.
     """
@@ -311,7 +311,7 @@ class Package:
 
     self.media_files = media_files or []
 
-  def write_to_file(self, file, media_path=''):
+  def write_to_file(self, file, media_path='.'):
     dbfile, dbfilename = tempfile.mkstemp()
     os.close(dbfile)
 
@@ -331,7 +331,7 @@ class Package:
       outzip.writestr('media', json.dumps(media_json))
 
       for i, f in media_json.items():
-        outzip.write(media_path + f, str(i))
+        outzip.write(os.path.join(media_path, f), str(i))
 
   def write_to_db(self, cursor, now_ts):
     cursor.executescript(APKG_SCHEMA)
