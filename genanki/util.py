@@ -1,4 +1,3 @@
-
 import hashlib
 
 BASE91_TABLE = [

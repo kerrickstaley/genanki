@@ -1,4 +1,3 @@
-
 import json
 
 from .apkg_col import APKG_COL

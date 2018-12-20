@@ -1,4 +1,3 @@
-
 from cached_property import cached_property
 
 from .card import Card

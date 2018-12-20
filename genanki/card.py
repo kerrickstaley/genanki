@@ -1,4 +1,3 @@
-
 class Card:
   def __init__(self, ord, suspend=False):
     self.ord = ord
