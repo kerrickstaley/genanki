@@ -1,4 +1,3 @@
-
 from cached_property import cached_property
 
 from .card import Card
@@ -48,7 +47,7 @@ class Note:
   def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         self.guid,                    # guid
-        self.model.id,          # mid
+        self.model.id,                # mid
         now_ts,                       # mod
         -1,                           # usn
         self._format_tags(),          # TODO tags
