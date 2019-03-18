@@ -50,6 +50,10 @@ class Deck:
     }
 
   def write_to_db(self, cursor, now_ts):
+    if not isinstance(self.deck_id, int):
+      raise TypeError('Deck .deck_id must be an integer, not {}.'.format(self.deck_id))
+    if not isinstance(self.name, str):
+      raise TypeError('Deck .name must be a string, not {}.'.format(self.name))
     self.update_models()
 
     for model in self.models.values():
