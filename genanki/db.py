@@ -32,7 +32,8 @@ def init_db(cursor):
 
 def add_deck(cursor, deck):
   decks_json, = cursor.execute('SELECT decks FROM col').fetchone()
-  assert decks_json is not None
+  if not decks_json:
+    raise RuntimeError('Database does not contain any deck')
 
   decks = json.loads(decks_json)
   decks[str(deck.id)] = deck.to_dict()
