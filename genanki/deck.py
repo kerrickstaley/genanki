@@ -3,7 +3,7 @@ import json
 from . import db
 
 class Deck:
-  def __init__(self, id: int, name: str):
+  def __init__(self, id: int=None, name: str=None):
     self.id = id
     self.name = name
     self.notes = []
