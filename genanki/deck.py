@@ -13,7 +13,7 @@ class Deck:
     self.notes.append(note)
 
   def add_model(self, model):
-    self.models[model.id] = model
+    self.models[model.model_id] = model
 
   def to_dict(self):
     return {

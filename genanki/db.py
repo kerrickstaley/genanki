@@ -46,7 +46,7 @@ def add_model(cursor, model, deck_id):
   assert models_json is not None
 
   models = json.loads(models_json)
-  models[str(model.id)] = model.to_dict(deck_id)
+  models[str(model.model_id)] = model.to_dict(deck_id)
 
   new_models_json = json.dumps(models)
   cursor.execute('UPDATE col SET models = ?', (new_models_json,))

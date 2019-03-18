@@ -5,8 +5,8 @@ import time
 import yaml
 
 class Model:
-  def __init__(self, id=None, name=None, fields=None, templates=None, css=''):
-    self.id = id
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css=''):
+    self.model_id = model_id
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
@@ -97,7 +97,7 @@ class Model:
       "css": self.css,
       "did": deck_id,
       "flds": self.fields,
-      "id": str(self.id),
+      "id": str(self.model_id),
       "latexPost": "\\end{document}",
       "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage{amssymb,amsmath}\n"
                   "\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
