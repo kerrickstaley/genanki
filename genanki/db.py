@@ -36,7 +36,7 @@ def add_deck(cursor, deck):
     raise RuntimeError('Database does not contain any deck')
 
   decks = json.loads(decks_json)
-  decks[str(deck.id)] = deck.to_dict()
+  decks[str(deck.deck_id)] = deck.to_dict()
 
   new_decks_json = json.dumps(decks)
   cursor.execute('UPDATE col SET decks = ?', (new_decks_json,))

@@ -3,8 +3,8 @@ import json
 from . import db
 
 class Deck:
-  def __init__(self, id: int=None, name: str=None):
-    self.id = id
+  def __init__(self, deck_id: int=None, name: str=None):
+    self.deck_id = deck_id
     self.name = name
     self.notes = []
     self.models = {}  # map of model id to model
@@ -27,7 +27,7 @@ class Deck:
       'dyn': 0,
       'extendNew': 0,
       'extendRev': 50,
-      'id': self.id,
+      'id': self.deck_id,
       'lrnToday': [
         163,
         2
@@ -53,12 +53,12 @@ class Deck:
     self.update_models()
 
     for model in self.models.values():
-      db.add_model(cursor, model, self.id)
+      db.add_model(cursor, model, self.deck_id)
 
     db.add_deck(cursor, self)
 
     for note in self.notes:
-      note.write_to_db(cursor, now_ts, self.id)
+      note.write_to_db(cursor, now_ts, self.deck_id)
 
   def write_to_file(self, file):
     """
