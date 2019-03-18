@@ -50,9 +50,3 @@ def add_model(cursor, model, deck_id):
 
   new_models_json = json.dumps(models)
   cursor.execute('UPDATE col SET models = ?', (new_models_json,))
-
-def add_note(cursor, note):
-  pass
-
-def add_card(cursor, card):
-  pass
