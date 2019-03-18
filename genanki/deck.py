@@ -15,10 +15,6 @@ class Deck:
   def add_model(self, model):
     self.models[model.id] = model
 
-  def update_models(self):
-    for note in self.notes:
-      self.add_model(note.model)
-
   def to_dict(self):
     return {
       'collapsed': True,
@@ -54,7 +50,8 @@ class Deck:
       raise TypeError('Deck .deck_id must be an integer, not {}.'.format(self.deck_id))
     if not isinstance(self.name, str):
       raise TypeError('Deck .name must be a string, not {}.'.format(self.name))
-    self.update_models()
+    for note in self.notes:
+      self.add_model(note.model)
 
     for model in self.models.values():
       db.add_model(cursor, model, self.deck_id)
