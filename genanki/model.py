@@ -4,12 +4,29 @@ import pystache
 import yaml
 
 class Model:
-  def __init__(self, model_id=None, name=None, fields=None, templates=None, css=''):
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='',
+          latex_header=None, latex_footer=None):
     self.model_id = model_id
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
     self.css = css
+
+    if latex_header is None:
+        self.latex_header = """\\documentclass[12pt]{article}
+        \\special{papersize=3in,5in}
+        \\usepackage{amssymb, amsmath}
+        \\pagestyle{empty}
+        \\setlength{\\parindent}{0in}
+        \\begin{document}
+        """,
+    else:
+        self.latex_header = latex_header
+
+    if latex_footer is None:
+        self.latex_footer = "\\end{document}"
+    else:
+        self.latex_footer = latex_footer
 
   def set_fields(self, fields):
     if isinstance(fields, list):
@@ -97,9 +114,8 @@ class Model:
       "did": deck_id,
       "flds": self.fields,
       "id": str(self.model_id),
-      "latexPost": "\\end{document}",
-      "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage{amssymb,amsmath}\n"
-                  "\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+      "latexPost": self.latex_footer,
+      "latexPre": self.latex_header,
       "mod": now_ts,
       "name": self.name,
       "req": self._req,
