@@ -19,7 +19,7 @@ class Model:
         \\pagestyle{empty}
         \\setlength{\\parindent}{0in}
         \\begin{document}
-        """,
+        """
     else:
         self.latex_header = latex_header
 
