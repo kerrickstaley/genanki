@@ -1,6 +1,7 @@
 from cached_property import cached_property
 from copy import copy
 import pystache
+import time
 import yaml
 
 class Model:
@@ -77,7 +78,7 @@ class Model:
 
     return req
 
-  def to_json(self, now_ts, deck_id):
+  def to_dict(self, deck_id):
     for ord_, tmpl in enumerate(self.templates):
       tmpl['ord'] = ord_
       tmpl.setdefault('bafmt', '')
@@ -100,7 +101,7 @@ class Model:
       "latexPost": "\\end{document}",
       "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage{amssymb,amsmath}\n"
                   "\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
-      "mod": now_ts,
+      "mod": int(time.time()),
       "name": self.name,
       "req": self._req,
       "sortf": 0,

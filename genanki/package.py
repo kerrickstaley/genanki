@@ -6,6 +6,7 @@ import time
 import zipfile
 
 from .apkg_schema import APKG_SCHEMA
+from . import db
 from .deck import Deck
 
 class Package:
@@ -40,7 +41,7 @@ class Package:
         outzip.write(f, str(i))
 
   def write_to_db(self, cursor, now_ts):
-    cursor.executescript(APKG_SCHEMA)
+    db.init_db(cursor)
 
     for deck in self.decks:
       deck.write_to_db(cursor, now_ts)
