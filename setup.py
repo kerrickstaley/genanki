@@ -4,12 +4,12 @@ version = {}
 with open('genanki/version.py') as fp:
   exec(fp.read(), version)
 
-setup(name='genanki',
+setup(name='genanki-marccarre',
       version=version['__version__'],
-      description='Generate Anki decks programmatically',
-      url='http://github.com/kerrickstaley/genanki',
-      author='Kerrick Staley',
-      author_email='k@kerrickstaley.com',
+      description='Generate Anki decks programmatically (fork from http://github.com/kerrickstaley/genanki)',
+      url='http://github.com/marccarre/genanki',
+      author='Marc Carré (fork maintainer), Kerrick Staley (original author)',
+      author_email='carre.marc@gmail.com',
       license='MIT',
       packages=['genanki'],
       zip_safe=False,
