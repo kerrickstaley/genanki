@@ -1,0 +1,8 @@
+.eggs/
+.pytest_cache/
+.venv/
+genanki.egg-info
+.dockerignore
+.gitignore
+.travis.yml
+Dockerfile
