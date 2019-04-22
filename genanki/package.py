@@ -5,6 +5,7 @@ import tempfile
 import time
 import zipfile
 
+from .apkg_col import APKG_COL
 from .apkg_schema import APKG_SCHEMA
 from .deck import Deck
 
@@ -41,6 +42,7 @@ class Package:
 
   def write_to_db(self, cursor, now_ts):
     cursor.executescript(APKG_SCHEMA)
+    cursor.executescript(APKG_COL)
 
     for deck in self.decks:
       deck.write_to_db(cursor, now_ts)

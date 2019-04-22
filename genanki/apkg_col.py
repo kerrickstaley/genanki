@@ -25,7 +25,7 @@ INSERT INTO col VALUES(
         "sortType": "noteFld",
         "timeLim": 0
     }',
-    ?3,
+    '{}',
     '{
         "1": {
             "collapsed": false,
@@ -54,34 +54,6 @@ INSERT INTO col VALUES(
                 0
             ],
             "usn": 0
-        },
-        "' || ?2 || '": {
-            "collapsed": false,
-            "conf": 1,
-            "desc": "",
-            "dyn": 0,
-            "extendNew": 0,
-            "extendRev": 50,
-            "id": ' || ?2 || ',
-            "lrnToday": [
-                163,
-                2
-            ],
-            "mod": 1425278051,
-            "name": "' || ?1 || '",
-            "newToday": [
-                163,
-                2
-            ],
-            "revToday": [
-                163,
-                0
-            ],
-            "timeToday": [
-                163,
-                23598
-            ],
-            "usn": -1
         }
     }',
     '{
