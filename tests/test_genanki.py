@@ -134,6 +134,20 @@ class TestWithCollection:
     # the bug causes us to fail to generate certain cards (e.g. the second card for the second note)
     assert len(cards) == 6
 
+  def test_multi_deck_package(self):
+    deck1 = genanki.Deck(123456, 'foodeck')
+    deck2 = genanki.Deck(654321, 'bardeck')
+
+    note = genanki.Note(TEST_MODEL, ['a', 'b'])
+
+    deck1.add_note(note)
+    deck2.add_note(note)
+
+    self.import_package(genanki.Package([deck1, deck2]))
+
+    all_imported_decks = self.col.decks.all()
+    assert len(all_imported_decks) == 3  # default deck, foodeck, and bardeck
+
   def test_card_isEmpty__with_2_fields__succeeds(self):
     """Tests for a bug in an early version of genanki where notes with <4 fields were not supported."""
     deck = genanki.Deck(123456, 'foodeck')
