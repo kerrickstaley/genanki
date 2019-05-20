@@ -70,7 +70,7 @@ class Deck:
     Write this deck to a .apkg file.
     """
     from .package import Package
-    Package(self).write_to_file(file, media_path)
+    Package(self).write_to_file(file, media_path=media_path)
 
   def write_to_collection_from_addon(self):
     """
