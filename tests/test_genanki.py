@@ -224,6 +224,28 @@ class TestWithCollection:
     missing, unused, invalid = self.col.media.check()
     assert set(missing) == {'missing.mp3', 'missing.jpg'}
 
+  def test_media_files_absolute_paths(self):
+    tmpdir = tempfile.mkdtemp()
+
+    deck = genanki.Deck(123456, 'foodeck')
+    note = genanki.Note(TEST_MODEL, [
+      'question [sound:present.mp3] [sound:missing.mp3]',
+      'answer <img src="present.jpg"> <img src="missing.jpg">'])
+    deck.add_note(note)
+
+    # populate files with data
+    present_mp3_path = os.path.join(tmpdir, 'present.mp3')
+    present_jpg_path = os.path.join(tmpdir, 'present.jpg')
+    with open(present_mp3_path, 'wb') as h:
+      h.write(VALID_MP3)
+    with open(present_jpg_path, 'wb') as h:
+      h.write(VALID_JPG)
+
+    self.import_package(genanki.Package(deck, media_files=[present_mp3_path, present_jpg_path]))
+
+    missing, unused, invalid = self.col.media.check()
+    assert set(missing) == {'missing.mp3', 'missing.jpg'}
+
   def test_write_deck_without_deck_id_fails(self):
     # change to a scratch directory so we can write files
     os.chdir(tempfile.mkdtemp())
