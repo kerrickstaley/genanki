@@ -77,7 +77,8 @@ my_package = genanki.Package(my_deck)
 my_package.media_files = ['sound.mp3', 'image.jpg']
 ```
 
-The media files should be in the current working directory by default, or you can specify the media file directory when creating the package:
+`media_files` should have the path (relative or absolute) to each file. If the paths are relative, you can specify a
+prefix to look under (default is current working directory) when you call `Package.write_to_file`:
 ```python
 current_dir = os.path.dirname(os.path.realpath(__file__))
 genanki.Package(my_deck).write_to_file('output.apkg', media_path='{}/mp3/'.format(current_dir))
