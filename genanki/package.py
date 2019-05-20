@@ -18,7 +18,7 @@ class Package:
 
     self.media_files = media_files or []
 
-  def write_to_file(self, file, media_path='.'):
+  def write_to_file(self, file, *, media_path='.'):
     dbfile, dbfilename = tempfile.mkstemp()
     os.close(dbfile)
 
