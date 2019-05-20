@@ -221,6 +221,9 @@ class TestWithCollection:
 
     self.import_package(genanki.Package(deck, media_files=['present.mp3', 'present.jpg']))
 
+    os.remove('present.mp3')
+    os.remove('present.jpg')
+
     missing, unused, invalid = self.col.media.check()
     assert set(missing) == {'missing.mp3', 'missing.jpg'}
 
