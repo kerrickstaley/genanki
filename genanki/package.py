@@ -34,11 +34,12 @@ class Package:
     with zipfile.ZipFile(file, 'w') as outzip:
       outzip.write(dbfilename, 'collection.anki2')
 
-      media_json = dict(enumerate(self.media_files))
+      media_file_idx_to_path = dict(enumerate(self.media_files))
+      media_json = {idx: os.path.basename(path) for idx, path in media_file_idx_to_path.items()}
       outzip.writestr('media', json.dumps(media_json))
 
-      for i, f in media_json.items():
-        outzip.write(f, str(i))
+      for idx, path in media_file_idx_to_path.items():
+        outzip.write(path, str(idx))
 
   def write_to_db(self, cursor, now_ts):
     cursor.executescript(APKG_SCHEMA)
