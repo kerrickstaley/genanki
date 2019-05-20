@@ -225,7 +225,9 @@ class TestWithCollection:
     assert set(missing) == {'missing.mp3', 'missing.jpg'}
 
   def test_media_files_absolute_paths(self):
-    tmpdir = tempfile.mkdtemp()
+    # change to a scratch directory so we can write files
+    os.chdir(tempfile.mkdtemp())
+    media_dir = tempfile.mkdtemp()
 
     deck = genanki.Deck(123456, 'foodeck')
     note = genanki.Note(TEST_MODEL, [
@@ -234,8 +236,8 @@ class TestWithCollection:
     deck.add_note(note)
 
     # populate files with data
-    present_mp3_path = os.path.join(tmpdir, 'present.mp3')
-    present_jpg_path = os.path.join(tmpdir, 'present.jpg')
+    present_mp3_path = os.path.join(media_dir, 'present.mp3')
+    present_jpg_path = os.path.join(media_dir, 'present.jpg')
     with open(present_mp3_path, 'wb') as h:
       h.write(VALID_MP3)
     with open(present_jpg_path, 'wb') as h:
