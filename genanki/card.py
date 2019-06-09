@@ -1,3 +1,7 @@
+# Using the epoch milliseconds of when the Card was created as ANKI do
+import time
+current_milli_time = lambda: int(round(time.time() * 1000))
+
 class Card:
   def __init__(self, ord, suspend=False):
     self.ord = ord
@@ -5,7 +9,11 @@ class Card:
 
   def write_to_db(self, cursor, now_ts, deck_id, note_id):
     queue = -1 if self.suspend else 0
-    cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
+    card_id = current_milli_time()
+    # Wait for 1 milliseconds to ensure that id is unique
+    time.sleep(.001)
+    cursor.execute('INSERT INTO cards VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
+        card_id,     # id
         note_id,    # nid
         deck_id,    # did
         self.ord,   # ord
