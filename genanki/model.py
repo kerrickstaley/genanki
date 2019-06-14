@@ -15,13 +15,13 @@ class Model:
     if isinstance(fields, list):
       self.fields = fields
     elif isinstance(fields, str):
-      self.fields = yaml.load(fields)
+      self.fields = yaml.full_load(fields)
 
   def set_templates(self, templates):
     if isinstance(templates, list):
       self.templates = templates
     elif isinstance(templates, str):
-      self.templates = yaml.load(templates)
+      self.templates = yaml.full_load(templates)
 
   @cached_property
   def _req(self):
