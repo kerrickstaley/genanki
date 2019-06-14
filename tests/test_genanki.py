@@ -103,6 +103,15 @@ class TestWithCollection:
     importer = anki.importing.apkg.AnkiPackageImporter(self.col, outf.name)
     importer.run()
 
+  def check_media(self):
+    # col.media.check seems to assume that the cwd is the media directory. So this helper function
+    # chdirs to the media dir before running check and then goes back to the original cwd.
+    orig_cwd = os.getcwd()
+    os.chdir(self.col.media.dir())
+    ret = self.col.media.check()
+    os.chdir(orig_cwd)
+    return ret
+
   def test_generated_deck_can_be_imported(self):
     deck = genanki.Deck(123456, 'foodeck')
     note = genanki.Note(TEST_MODEL, ['a', 'b'])
@@ -221,7 +230,34 @@ class TestWithCollection:
 
     self.import_package(genanki.Package(deck, media_files=['present.mp3', 'present.jpg']))
 
-    missing, unused, invalid = self.col.media.check()
+    os.remove('present.mp3')
+    os.remove('present.jpg')
+
+    missing, unused, invalid = self.check_media()
+    assert set(missing) == {'missing.mp3', 'missing.jpg'}
+
+  def test_media_files_absolute_paths(self):
+    # change to a scratch directory so we can write files
+    os.chdir(tempfile.mkdtemp())
+    media_dir = tempfile.mkdtemp()
+
+    deck = genanki.Deck(123456, 'foodeck')
+    note = genanki.Note(TEST_MODEL, [
+      'question [sound:present.mp3] [sound:missing.mp3]',
+      'answer <img src="present.jpg"> <img src="missing.jpg">'])
+    deck.add_note(note)
+
+    # populate files with data
+    present_mp3_path = os.path.join(media_dir, 'present.mp3')
+    present_jpg_path = os.path.join(media_dir, 'present.jpg')
+    with open(present_mp3_path, 'wb') as h:
+      h.write(VALID_MP3)
+    with open(present_jpg_path, 'wb') as h:
+      h.write(VALID_JPG)
+
+    self.import_package(genanki.Package(deck, media_files=[present_mp3_path, present_jpg_path]))
+
+    missing, unused, invalid = self.check_media()
     assert set(missing) == {'missing.mp3', 'missing.jpg'}
 
   def test_write_deck_without_deck_id_fails(self):

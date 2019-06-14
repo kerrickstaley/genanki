@@ -74,15 +74,18 @@ To add sounds or images, set the `media_files` attribute on your `Package`:
 
 ```python
 my_package = genanki.Package(my_deck)
-my_package.media_files = ['sound.mp3', 'image.jpg']
+my_package.media_files = ['sound.mp3', 'images/image.jpg']
 ```
 
-The media files should be in the current working directory. They can be referenced in notes like this:
+`media_files` should have the path (relative or absolute) to each file. They can be referenced in notes like this:
 
 ```html
 [sound:sound.mp3]
 <img src="image.jpg">
 ```
+
+You should only put the filename (aka basename) and not the full path in the `src` attribute. Media files should have
+unique filenames.
 
 ## Note GUIDs
 `Note`s have a `guid` property that uniquely identifies the note. If you import a new note that has the same GUID as an
