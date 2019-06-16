@@ -1,9 +1,10 @@
 import json
 
 class Deck:
-  def __init__(self, deck_id=None, name=None):
+  def __init__(self, deck_id=None, name=None, description=''):
     self.deck_id = deck_id
     self.name = name
+    self.description = description
     self.notes = []
     self.models = {}  # map of model id to model
 
@@ -17,7 +18,7 @@ class Deck:
     return {
       "collapsed": False,
       "conf": 1,
-      "desc": "",
+      "desc": self.description,
       "dyn": 0,
       "extendNew": 0,
       "extendRev": 50,
