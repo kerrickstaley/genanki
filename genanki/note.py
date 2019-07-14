@@ -44,8 +44,11 @@ class Note:
   def guid(self, val):
     self._guid = val
 
-    cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
   def write_to_db(self, cursor, now_ts, deck_id, note_idx):
+    now_ts_milliseconds = now_ts * 1000
+    note_id = now_ts_milliseconds + note_idx
+    cursor.execute('INSERT INTO notes VALUES(?,?,?,?,?,?,?,?,?,?,?);', (
+        note_id,                      # id
         self.guid,                    # guid
         self.model.model_id,          # mid
         now_ts,                       # mod
@@ -58,7 +61,6 @@ class Note:
         '',                           # data
     ))
 
-    note_id = cursor.lastrowid
     for card in self.cards:
       card.write_to_db(cursor, now_ts, deck_id, note_id)
 
