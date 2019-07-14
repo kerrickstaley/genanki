@@ -44,8 +44,8 @@ class Note:
   def guid(self, val):
     self._guid = val
 
-  def write_to_db(self, cursor, now_ts, deck_id):
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
+  def write_to_db(self, cursor, now_ts, deck_id, note_idx):
         self.guid,                    # guid
         self.model.model_id,          # mid
         now_ts,                       # mod

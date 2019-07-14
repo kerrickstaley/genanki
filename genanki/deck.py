@@ -63,8 +63,8 @@ class Deck:
       {model.model_id: model.to_json(now_ts, self.deck_id) for model in self.models.values()})
     cursor.execute('UPDATE col SET models = ?', (json.dumps(models),))
 
-    for note in self.notes:
-      note.write_to_db(cursor, now_ts, self.deck_id)
+    for note_idx, note in enumerate(self.notes):
+      note.write_to_db(cursor, now_ts, self.deck_id, note_idx)
 
   def write_to_file(self, file):
     """
