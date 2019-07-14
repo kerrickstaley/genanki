@@ -3,9 +3,10 @@ class Card:
     self.ord = ord
     self.suspend = suspend
 
-  def write_to_db(self, cursor, now_ts, deck_id, note_id):
+  def write_to_db(self, cursor, now_ts, deck_id, note_id, card_id):
     queue = -1 if self.suspend else 0
-    cursor.execute('INSERT INTO cards VALUES(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
+    cursor.execute('INSERT INTO cards VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
+        card_id,     # id
         note_id,    # nid
         deck_id,    # did
         self.ord,   # ord

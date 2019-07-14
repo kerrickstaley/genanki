@@ -61,8 +61,9 @@ class Note:
         '',                           # data
     ))
 
-    for card in self.cards:
-      card.write_to_db(cursor, now_ts, deck_id, note_id)
+    for card_idx, card in enumerate(self.cards):
+      card_id = now_ts_milliseconds + note_idx * len(self.cards) + card_idx
+      card.write_to_db(cursor, now_ts, deck_id, note_id, card_id)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)
