@@ -6,6 +6,23 @@ from genanki import Note
 from genanki import Deck
 from genanki import Package
 
+CSS = """.card {
+ font-family: arial;
+ font-size: 20px;
+ text-align: center;
+ color: black;
+ background-color: white;
+}
+
+.cloze {
+ font-weight: bold;
+ color: blue;
+}
+.nightMode .cloze {
+ color: lightblue;
+}
+"""
+
 MY_CLOZE_MODEL = Model(
   998877661,
   'My Cloze Model',
@@ -18,6 +35,7 @@ MY_CLOZE_MODEL = Model(
     'qfmt': '{{cloze:Text}}',
     'afmt': '{{cloze:Text}}<br>{{Extra}}',
   },],
+  css=CSS,
   model_type=1)
 
 def test_cloze():
