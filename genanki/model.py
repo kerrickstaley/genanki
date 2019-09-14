@@ -4,12 +4,13 @@ import pystache
 import yaml
 
 class Model:
-  def __init__(self, model_id=None, name=None, fields=None, templates=None, css=''):
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', type=0):
     self.model_id = model_id
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
     self.css = css
+    self.type = type
 
   def set_fields(self, fields):
     if isinstance(fields, list):
@@ -106,7 +107,7 @@ class Model:
       "sortf": 0,
       "tags": [],
       "tmpls": self.templates,
-      "type": 0,
+      "type": self.type,
       "usn": -1,
       "vers": []
     }
