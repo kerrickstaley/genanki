@@ -6,6 +6,7 @@ from genanki import Note
 from genanki import Deck
 from genanki import Package
 
+
 CSS = """.card {
  font-family: arial;
  font-size: 20px;
@@ -36,7 +37,7 @@ MY_CLOZE_MODEL = Model(
     'afmt': '{{cloze:Text}}<br>{{Extra}}',
   },],
   css=CSS,
-  model_type=1)
+  model_type=Model.CLOZE)
 
 def test_cloze():
   """Test Cloze model"""

@@ -28,7 +28,7 @@ class Note:
   # __init__ and it'll still work.
   @cached_property
   def cards(self):
-    if self.model.model_type == 0:
+    if self.model.model_type == self.model.FRONT_BACK:
       rv = []
       for card_ord, any_or_all, required_field_ords in self.model._req:
         op = {'any': any, 'all': all}[any_or_all]
@@ -36,7 +36,7 @@ class Note:
           rv.append(Card(card_ord))
       return rv
     # returns a Card with unique ord for each unique cloze reference
-    assert self.model.model_type == 1, self.model.model_type
+    assert self.model.model_type == self.model.CLOZE, self.model.model_type
     card_ords = set()
     # find cloze replacements in first template's qfmt, e.g "{{cloze::Text}}"
     cloze_replacements = set(
