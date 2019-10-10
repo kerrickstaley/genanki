@@ -1,5 +1,6 @@
 """Test creating Cloze cards"""
 
+import sys
 from genanki import Model
 from genanki import Note
 from genanki import Deck
@@ -38,7 +39,7 @@ MY_CLOZE_MODEL = Model(
   css=CSS,
   model_type=Model.CLOZE)
 
-def test_cloze():
+def test_cloze(write_to_test_apkg=False):
   """Test Cloze model"""
   notes = []
   assert MY_CLOZE_MODEL.to_json(0, 0)["type"] == 1
@@ -58,6 +59,11 @@ def test_cloze():
   assert {card.ord for card in my_cloze_note.cards} == {0}
   notes.append(my_cloze_note)
 
+  if write_to_test_apkg:
+    _wr_apkg(notes)
+
+def _wr_apkg(notes):
+  """Write cloze cards to an Anki apkg file"""
   deckname = 'mtherieau'
   deck = Deck(deck_id=0, name=deckname)
   for note in notes:
@@ -66,5 +72,6 @@ def test_cloze():
   Package(deck).write_to_file(fout_anki)
   print('  {N} WROTE: {APKG}'.format(N=len(notes), APKG=fout_anki))
 
+
 if __name__ == '__main__':
-  test_cloze()
+  test_cloze(len(sys.argv) != 1)
