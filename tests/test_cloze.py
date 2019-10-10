@@ -62,6 +62,7 @@ def test_cloze(write_to_test_apkg=False):
   if write_to_test_apkg:
     _wr_apkg(notes)
 
+
 def _wr_apkg(notes):
   """Write cloze cards to an Anki apkg file"""
   deckname = 'mtherieau'
