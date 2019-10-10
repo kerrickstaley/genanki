@@ -50,7 +50,7 @@ def test_cloze():
 
   fields = ['NOTE TWO: {{c1::1st deletion}} {{c2::2nd deletion}} {{c3::3rd deletion}}', '']
   my_cloze_note = Note(model=MY_CLOZE_MODEL, fields=fields)
-  assert {card.ord for card in my_cloze_note.cards} == {0, 1, 2}
+  assert sorted(card.ord for card in my_cloze_note.cards) == [0, 1, 2]
   notes.append(my_cloze_note)
 
   fields = ['NOTE THREE: {{c1::1st deletion::C1-CLOZE}}', '']
