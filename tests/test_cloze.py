@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Test creating Cloze cards"""
 
 from genanki import Model
