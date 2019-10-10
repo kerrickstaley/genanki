@@ -34,7 +34,8 @@ class Note:
 
   def _cloze_cards(self):
     """returns a Card with unique ord for each unique cloze reference"""
-    assert self.model.model_type == self.model.CLOZE, self.model.model_type
+    if self.model.model_type != self.model.CLOZE:
+      raise RuntimeError('Expected model_type CLOZE or FRONT_BACK')
     card_ords = set()
     # find cloze replacements in first template's qfmt, e.g "{{cloze::Text}}"
     cloze_replacements = set(
