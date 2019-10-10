@@ -29,13 +29,11 @@ class Note:
   @cached_property
   def cards(self):
     if self.model.model_type == self.model.FRONT_BACK:
-      rv = []
-      for card_ord, any_or_all, required_field_ords in self.model._req:
-        op = {'any': any, 'all': all}[any_or_all]
-        if op(self.fields[ord_] for ord_ in required_field_ords):
-          rv.append(Card(card_ord))
-      return rv
-    # returns a Card with unique ord for each unique cloze reference
+      return self._front_back_cards()
+    return self._cloze_cards()
+
+  def _cloze_cards(self):
+    """returns a Card with unique ord for each unique cloze reference"""
     assert self.model.model_type == self.model.CLOZE, self.model.model_type
     card_ords = set()
     # find cloze replacements in first template's qfmt, e.g "{{cloze::Text}}"
@@ -50,6 +48,15 @@ class Note:
     if card_ords == {}:
       card_ords = {0}
     return([Card(ord) for ord in card_ords])
+
+  def _front_back_cards(self):
+    """Create Front/Back cards"""
+    rv = []
+    for card_ord, any_or_all, required_field_ords in self.model._req:
+      op = {'any': any, 'all': all}[any_or_all]
+      if op(self.fields[ord_] for ord_ in required_field_ords):
+        rv.append(Card(card_ord))
+    return rv
 
   @property
   def guid(self):
