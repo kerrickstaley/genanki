@@ -40,6 +40,24 @@ MY_CLOZE_MODEL = Model(
   css=CSS,
   model_type=Model.CLOZE)
 
+# This doesn't seem to be very useful but Anki supports it and so do we *shrug*
+MULTI_FIELD_CLOZE_MODEL = Model(
+  1047194615,
+  'Multi Field Cloze Model',
+  fields=[
+    {'name': 'Text1'},
+    {'name': 'Text2'},
+  ],
+  templates=[{
+    'name': 'Cloze',
+    'qfmt': '{{cloze:Text1}} and {{cloze:Text2}}',
+    'afmt': '{{cloze:Text1}} and {{cloze:Text2}}',
+  }],
+  css=CSS,
+  model_type=Model.CLOZE,
+)
+
+
 def test_cloze(write_to_test_apkg=False):
   """Test Cloze model"""
   notes = []
@@ -82,6 +100,7 @@ def test_cloze(write_to_test_apkg=False):
   if write_to_test_apkg:
     _wr_apkg(notes)
 
+
 def _wr_apkg(notes):
   """Write cloze cards to an Anki apkg file"""
   deckname = 'mtherieau'
@@ -91,6 +110,21 @@ def _wr_apkg(notes):
   fout_anki = '{NAME}.apkg'.format(NAME=deckname)
   Package(deck).write_to_file(fout_anki)
   print('  {N} Notes WROTE: {APKG}'.format(N=len(notes), APKG=fout_anki))
+
+
+def test_cloze_multi_field():
+  fields = [
+    '{{c1::Berlin}} is the capital of {{c2::Germany}}',
+    '{{c3::Paris}} is the capital of {{c4::France}}']
+
+  note = Note(model=MULTI_FIELD_CLOZE_MODEL, fields=fields)
+  assert sorted(card.ord for card in note.cards) == [0, 1, 2, 3]
+
+
+def test_cloze_indicies_do_not_start_at_1():
+  fields = ['{{c2::Mitochondria}} are the {{c3::powerhouses}} of the cell', '']
+  note = Note(model=MY_CLOZE_MODEL, fields=fields)
+  assert sorted(card.ord for card in note.cards) == [1, 2]
 
 
 if __name__ == '__main__':
