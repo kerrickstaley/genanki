@@ -72,11 +72,11 @@ def test_cloze(write_to_test_apkg=False):
   assert {card.ord for card in my_cloze_note.cards} == {0}
   notes.append(my_cloze_note)
 
-  # Question: NOTE FOUR: foo bar [...]
-  # Answer:   NOTE FOUR: foo bar 3rd deletion
-  fields = ['NOTE FOUR: {{c1:1st deletion}} foo {{c2:2nd deletion}} bar {{c1::3rd deletion}}', '']
+  # Question: NOTE FOUR: [...] foo 2nd deletion bar [...]
+  # Answer:   NOTE FOUR: 1st deletion foo 2nd deletion bar 3rd deletion
+  fields = ['NOTE FOUR: {{c1::1st deletion}} foo {{c2::2nd deletion}} bar {{c1::3rd deletion}}', '']
   my_cloze_note = Note(model=MY_CLOZE_MODEL, fields=fields)
-  assert {card.ord for card in my_cloze_note.cards} == {0}
+  assert sorted(card.ord for card in my_cloze_note.cards) == [0, 1]
   notes.append(my_cloze_note)
 
   if write_to_test_apkg:
