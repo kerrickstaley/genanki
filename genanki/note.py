@@ -30,12 +30,12 @@ class Note:
   def cards(self):
     if self.model.model_type == self.model.FRONT_BACK:
       return self._front_back_cards()
-    return self._cloze_cards()
+    elif self.model.model_type == self.model.CLOZE:
+      return self._cloze_cards()
+    raise ValueError('Expected model_type CLOZE or FRONT_BACK')
 
   def _cloze_cards(self):
     """Returns a Card with unique ord for each unique cloze reference."""
-    if self.model.model_type != self.model.CLOZE:
-      raise ValueError('Expected model_type CLOZE or FRONT_BACK')
     card_ords = set()
     # find cloze replacements in first template's qfmt, e.g "{{cloze::Text}}"
     cloze_replacements = set(
