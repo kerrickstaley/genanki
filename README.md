@@ -31,6 +31,7 @@ my_model = genanki.Model(
     {'name': 'Question'},
     {'name': 'Answer'},
   ],
+  sort_field_number=2,
   templates=[
     {
       'name': 'Card 1',
@@ -47,6 +48,12 @@ CSS.
 You need to pass a `model_id` so that Anki can keep track of your model. It's important that you use a unique `model_id`
 for each `Model` you define. Use `import random; random.randrange(1 << 30, 1 << 31)` to generate a suitable model_id, and hardcode it
 into your `Model` definition.
+
+Finally, the notes browser inside Anki will sort cards with a special sorting field. The default value for this field
+is the value of the note's first field. You can change the used note field by passing a number to the
+`sort_field_number` argument when creating the `Model` (`2` for second field).
+In case some of your notes need to use a sorting key that you would rather not be present in the note fields,
+then you can pass the sorting key value with the `sort_field` argument when creating your `Note`.
 
 ## Generating a Deck/Package
 To import your notes into Anki, you need to add them to a `Deck`:
@@ -121,12 +128,6 @@ class MyNote(genanki.Note):
   def guid(self):
     return genanki.guid_for(self.fields[0], self.fields[1])
 ```
-
-## sort_field
-Anki has a value for each `Note` called the `sort_field`. Anki uses this value to sort the cards in the Browse
-interface. Anki also is happier if you avoid having two notes with the same `sort_field`, although this isn't strictly
-necessary. By default, the `sort_field` is the first field, but you can change it by passing `sort_field=` to `Note()`
-or implementing `sort_field` as a property in a subclass (similar to `guid`).
 
 ## YAML for Templates (and Fields)
 You can create your template definitions in the YAML format and pass them as a `str` to `Model()`. You can also do this
