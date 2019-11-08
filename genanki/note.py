@@ -1,3 +1,4 @@
+import re
 from cached_property import cached_property
 
 from .card import Card
@@ -27,6 +28,30 @@ class Note:
   # __init__ and it'll still work.
   @cached_property
   def cards(self):
+    if self.model.model_type == self.model.FRONT_BACK:
+      return self._front_back_cards()
+    elif self.model.model_type == self.model.CLOZE:
+      return self._cloze_cards()
+    raise ValueError('Expected model_type CLOZE or FRONT_BACK')
+
+  def _cloze_cards(self):
+    """Returns a Card with unique ord for each unique cloze reference."""
+    card_ords = set()
+    # find cloze replacements in first template's qfmt, e.g "{{cloze::Text}}"
+    cloze_replacements = set(
+      re.findall(r"{{[^}]*?cloze:(?:[^}]?:)*(.+?)}}", self.model.templates[0]['qfmt']) +
+      re.findall("<%cloze:(.+?)%>", self.model.templates[0]['qfmt']))
+    for field_name in cloze_replacements:
+      field_index = next((i for i, f in enumerate(self.model.fields) if f['name'] == field_name), -1)
+      field_value = self.fields[field_index] if field_index >= 0 else ""
+      # update card_ords with each cloze reference N, e.g. "{{cN::...}}"
+      card_ords.update(int(m)-1 for m in re.findall(r"{{c(\d+)::.+?}}", field_value) if int(m) > 0)
+    if card_ords == {}:
+      card_ords = {0}
+    return([Card(ord) for ord in card_ords])
+
+  def _front_back_cards(self):
+    """Create Front/Back cards"""
     rv = []
     for card_ord, any_or_all, required_field_ords in self.model._req:
       op = {'any': any, 'all': all}[any_or_all]

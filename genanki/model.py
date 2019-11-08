@@ -1,15 +1,20 @@
-from cached_property import cached_property
 from copy import copy
+from cached_property import cached_property
 import pystache
 import yaml
 
 class Model:
-  def __init__(self, model_id=None, name=None, fields=None, templates=None, css=''):
+
+  FRONT_BACK = 0
+  CLOZE = 1
+
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', model_type=FRONT_BACK):
     self.model_id = model_id
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
     self.css = css
+    self.model_type = model_type
 
   def set_fields(self, fields):
     if isinstance(fields, list):
@@ -106,7 +111,7 @@ class Model:
       "sortf": 0,
       "tags": [],
       "tmpls": self.templates,
-      "type": 0,
+      "type": self.model_type,
       "usn": -1,
       "vers": []
     }
