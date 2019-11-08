@@ -4,6 +4,47 @@ from cached_property import cached_property
 from .card import Card
 from .util import guid_for
 
+
+class _TagList(list):
+  @staticmethod
+  def _validate_tag(tag):
+    if ' ' in tag:
+      raise ValueError('Tag "{}" contains a space; this is not allowed!'.format(tag))
+
+  def __init__(self, tags=()):
+    super().__init__()
+    self.extend(tags)
+
+  def __repr__(self):
+    return '{}({})'.format(self.__class__.__name__, super().__repr__())
+
+  def __setitem__(self, key, val):
+    if isinstance(key, slice):
+      # val may be an iterator, convert to a list so we can iterate multiple times
+      val = list(val)
+      for tag in val:
+        self._validate_tag(tag)
+    else:
+      self._validate_tag(val)
+
+    super().__setitem__(key, val)
+
+  def append(self, tag):
+    self._validate_tag(tag)
+    super().append(tag)
+
+  def extend(self, tags):
+    # tags may be an iterator, convert to list so we can iterate multiple times
+    tags = list(tags)
+    for tag in tags:
+      self._validate_tag(tag)
+    super().extend(tags)
+
+  def insert(self, i, tag):
+    self._validate_tag(tag)
+    super().insert(i, tag)
+
+
 class Note:
   def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
     self.model = model
@@ -23,6 +64,15 @@ class Note:
   @sort_field.setter
   def sort_field(self, val):
     self._sort_field = val
+
+  @property
+  def tags(self):
+    return self._tags
+
+  @tags.setter
+  def tags(self, val):
+    self._tags = _TagList()
+    self._tags.extend(val)
 
   # We use cached_property instead of initializing in the constructor so that the user can set the model after calling
   # __init__ and it'll still work.
