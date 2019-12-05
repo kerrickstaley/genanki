@@ -136,3 +136,12 @@ for fields.
 `genanki` supports adding generated notes to the local collection when running inside an Anki 2.1 addon (Anki 2.0
 may work but has not been tested). See the [`.write_to_collection_from_addon() method`](
 https://github.com/kerrickstaley/genanki/blob/0c2cf8fea9c5e382e2fae9cd6d5eb440e267c637/genanki/__init__.py#L275).
+
+## Publishing to PyPI
+If your name is Kerrick, you can publish the `genanki` package to PyPI by running these commands from the root of the `genanki` repo:
+```
+rm -rf dist/*
+python3 setup.py sdist bdist_wheel
+python3 -m twine upload dist/*
+```
+Note that this directly uploads to prod PyPI and skips uploading to test PyPI.
