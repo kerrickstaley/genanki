@@ -2,6 +2,7 @@ from copy import copy
 from cached_property import cached_property
 import pystache
 import yaml
+import re
 
 class Model:
 
@@ -42,6 +43,8 @@ class Model:
     sentinel = 'SeNtInEl'
     field_names = [field['name'] for field in self.fields]
 
+    partial_option_re = re.compile("{{.*:")
+
     req = []
     for template_ord, template in enumerate(self.templates):
       field_values = {field: sentinel for field in field_names}
@@ -50,7 +53,9 @@ class Model:
         fvcopy = copy(field_values)
         fvcopy[field] = ''
 
-        rendered = pystache.render(template['qfmt'], fvcopy)
+        # pystache can't handle anki options in partials such as "{{furigana:Word}}, so delete them before this test
+        clean_template = partial_option_re.sub("{{", template['qfmt'])
+        rendered = pystache.render(clean_template, fvcopy)
 
         if sentinel not in rendered:
           # when this field is missing, there is no meaningful content (no field values) in the question, so this field
@@ -67,7 +72,8 @@ class Model:
         fvcopy = copy(field_values)
         fvcopy[field] = sentinel
 
-        rendered = pystache.render(template['qfmt'], fvcopy)
+        clean_template = partial_option_re.sub("{{", template['qfmt'])
+        rendered = pystache.render(clean_template, fvcopy)
 
         if sentinel in rendered:
           # when this field is present, there is meaningful content in the question
