@@ -43,7 +43,7 @@ class Model:
     sentinel = 'SeNtInEl'
     field_names = [field['name'] for field in self.fields]
 
-    partial_option_re = re.compile("{{.*:")
+    partial_option_re = re.compile(r"{{(?!cloze:)[\w]*(?<!}):")
 
     req = []
     for template_ord, template in enumerate(self.templates):
