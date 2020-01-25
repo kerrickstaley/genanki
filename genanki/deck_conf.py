@@ -1,4 +1,5 @@
 
+import copy
 import json
 
 
@@ -52,7 +53,7 @@ class DeckConf:
   def __init__(self, deck_conf_id, name, conf=None):
     self.deck_conf_id = deck_conf_id
     self.name = name
-    conf = DEFAULT_CONF.copy() if conf is None else conf
+    conf = copy.deepcopy(DEFAULT_CONF) if conf is None else conf
     conf["name"] = self.name
     conf["id"] = self.deck_conf_id
     self.conf = conf
