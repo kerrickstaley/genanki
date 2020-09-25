@@ -47,6 +47,8 @@ class _TagList(list):
 
 class Note:
   def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
+    self._model = None
+    self._fields = None
     self.model = model
     self.fields = fields
     self.sort_field = sort_field
@@ -56,6 +58,29 @@ class Note:
     except AttributeError:
       # guid was defined as a property
       pass
+
+  @property
+  def model(self):
+    return self._model
+
+  @model.setter
+  def model(self, val):
+    self._model = val
+    self._check_number_model_fields_matches_num_fields()
+
+  @property
+  def fields(self):
+    return self._fields
+
+  @fields.setter
+  def fields(self, val):
+    self._fields = val
+    self._check_number_model_fields_matches_num_fields()
+
+  def _check_number_model_fields_matches_num_fields(self):
+    if self.model is not None and self.fields is not None:
+      if len(self.model.fields) != len(self.fields):
+        raise ValueError('Number of fields in Model does not match number of fields in Note')
 
   @property
   def sort_field(self):
@@ -120,6 +145,7 @@ class Note:
     self._guid = val
 
   def write_to_db(self, cursor, now_ts, deck_id):
+    self._check_number_model_fields_matches_num_fields()
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         self.guid,                    # guid
         self.model.model_id,          # mid
