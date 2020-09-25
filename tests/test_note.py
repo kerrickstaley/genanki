@@ -1,5 +1,6 @@
 import pytest
 import genanki
+from unittest import mock
 
 
 class TestTags:
@@ -43,3 +44,77 @@ class TestTags:
     n.tags.insert(0, 'lucina')
     with pytest.raises(ValueError):
       n.tags.insert(0, 'nerf joker pls')
+
+
+def test_num_fields_equals_model_ok():
+  m = genanki.Model(
+    1894808898,
+    'Test Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+      {'name': 'Extra'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  n = genanki.Note(
+    model=m,
+    fields=['What is the capital of Taiwan?', 'Taipei',
+            'Taipei was originally inhabitied by the Ketagalan people prior to the arrival of Han settlers in 1709.'])
+
+  n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+  # test passes if code gets to here without raising
+
+
+def test_num_fields_less_than_model_raises():
+  m = genanki.Model(
+    1894808898,
+    'Test Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+      {'name': 'Extra'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  n = genanki.Note(model=m, fields=['What is the capital of Taiwan?', 'Taipei'])
+
+  with pytest.raises(ValueError):
+    n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+
+def test_num_fields_more_than_model_raises():
+  m = genanki.Model(
+    1894808898,
+    'Test Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  n = genanki.Note(
+    model=m,
+    fields=['What is the capital of Taiwan?', 'Taipei',
+            'Taipei was originally inhabitied by the Ketagalan people prior to the arrival of Han settlers in 1709.'])
+
+  with pytest.raises(ValueError):
+    n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())

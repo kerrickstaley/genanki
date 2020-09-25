@@ -119,7 +119,12 @@ class Note:
   def guid(self, val):
     self._guid = val
 
+  def _check_number_model_fields_matches_num_fields(self):
+    if len(self.model.fields) != len(self.fields):
+      raise ValueError('Number of fields in Model does not match number of fields in Note')
+
   def write_to_db(self, cursor, now_ts, deck_id):
+    self._check_number_model_fields_matches_num_fields()
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         self.guid,                    # guid
         self.model.model_id,          # mid
