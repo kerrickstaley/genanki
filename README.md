@@ -45,7 +45,7 @@ This note-type has two fields and one card. The card displays the `Question` fie
 CSS.
 
 You need to pass a `model_id` so that Anki can keep track of your model. It's important that you use a unique `model_id`
-for each `Model` you define. Use `random.randrange(1 << 30, 1 << 31)` to generate a suitable model_id, and hardcode it
+for each `Model` you define. Use `import random; random.randrange(1 << 30, 1 << 31)` to generate a suitable model_id, and hardcode it
 into your `Model` definition.
 
 ## Generating a Deck/Package
