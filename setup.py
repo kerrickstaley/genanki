@@ -23,7 +23,7 @@ setup(name='genanki',
           'pytest-runner',
       ],
       tests_require=[
-          'pytest',
+          'pytest>=6.0.2',
       ],
       keywords=[
         'anki',
