@@ -1,6 +1,7 @@
 import pytest
 import genanki
 from unittest import mock
+import textwrap
 
 
 class TestTags:
@@ -118,3 +119,54 @@ def test_num_fields_more_than_model_raises():
 
   with pytest.raises(ValueError):
     n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+
+class TestFindInvalidHtmlTagsInFied:
+  def test_ok(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<h1>') == []
+
+  def test_ok_with_space(self):
+    assert genanki.Note._find_invalid_html_tags_in_field(' <h1> ') == []
+
+  def test_ok_multiple(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<h1>test</h1>') == []
+
+  def test_ok_br(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<br>') == []
+
+  def test_ok_br2(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<br/>') == []
+
+  def test_ok_br3(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<br />') == []
+
+  def test_ok_attrs(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<h1 style="color: red">STOP</h1>') == []
+
+  def test_ng_empty(self):
+    assert genanki.Note._find_invalid_html_tags_in_field(' hello <> goodbye') == ['<>']
+
+  def test_ng_empty_space(self):
+    assert genanki.Note._find_invalid_html_tags_in_field(' hello < > goodbye') == ['< >']
+
+  def test_ng_invalid_characters(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<@h1>') == ['<@h1>']
+
+  def test_ng_issue_28(self):
+    latex_code = r'''
+        [latex]
+        \schemestart
+        \chemfig{*6(--(<OH)-(<:Br)---)}
+        \arrow{->[?]}
+        \chemfig{*6(--(<[:30]{O}?)(<:H)-?[,{>},](<:H)---)}
+        \schemestop
+        [/latex]
+        '''
+    latex_code = textwrap.dedent(latex_code[1:])
+
+    expected_invalid_tags = [
+      '<OH)-(<:Br)---)}\n\\arrow{->',
+      '<[:30]{O}?)(<:H)-?[,{>',
+    ]
+
+    assert genanki.Note._find_invalid_html_tags_in_field(latex_code) == expected_invalid_tags

@@ -46,6 +46,8 @@ class _TagList(list):
 
 
 class Note:
+  _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-z0-9]+(?: .*|/?))(?:.|\n)*?>')
+
   def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
     self.model = model
     self.fields = fields
@@ -122,6 +124,10 @@ class Note:
   def _check_number_model_fields_matches_num_fields(self):
     if len(self.model.fields) != len(self.fields):
       raise ValueError('Number of fields in Model does not match number of fields in Note')
+
+  @classmethod
+  def _find_invalid_html_tags_in_field(cls, field):
+    return cls._INVALID_HTML_TAG_RE.findall(field)
 
   def write_to_db(self, cursor, now_ts, deck_id):
     self._check_number_model_fields_matches_num_fields()
