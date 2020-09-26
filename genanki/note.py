@@ -1,4 +1,5 @@
 import re
+import warnings
 from cached_property import cached_property
 
 from .card import Card
@@ -46,6 +47,8 @@ class _TagList(list):
 
 
 class Note:
+  _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-z0-9]+(?: .*|/?)>)(?:.|\n)*?>')
+
   def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
     self.model = model
     self.fields = fields
@@ -123,8 +126,26 @@ class Note:
     if len(self.model.fields) != len(self.fields):
       raise ValueError('Number of fields in Model does not match number of fields in Note')
 
+  @classmethod
+  def _find_invalid_html_tags_in_field(cls, field):
+    return cls._INVALID_HTML_TAG_RE.findall(field)
+
+  def _check_invalid_html_tags_in_fields(self):
+    for idx, field in enumerate(self.fields):
+      invalid_tags = self._find_invalid_html_tags_in_field(field)
+      if invalid_tags:
+        # You can disable the below warning by calling warnings.filterwarnings:
+        #
+        # warnings.filterwarnings('ignore', module='genanki', message='^Field contained the following invalid HTML tags')
+        #
+        # If you think you're getting a false positive for this warning, please file an issue at
+        # https://github.com/kerrickstaley/genanki/issues
+        warnings.warn("Field contained the following invalid HTML tags. Make sure you are calling html.escape() if"
+                      " your field data isn't already HTML-encoded: {}".format(' '.join(invalid_tags)))
+
   def write_to_db(self, cursor, now_ts, deck_id):
     self._check_number_model_fields_matches_num_fields()
+    self._check_invalid_html_tags_in_fields()
     cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
         self.guid,                    # guid
         self.model.model_id,          # mid

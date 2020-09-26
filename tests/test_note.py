@@ -1,6 +1,35 @@
 import pytest
 import genanki
 from unittest import mock
+import textwrap
+import warnings
+
+
+def test_ok():
+  my_model = genanki.Model(
+    1376484377,
+    'Simple Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  my_note = genanki.Note(
+    model=my_model,
+    fields=['Capital of Argentina', 'Buenos Aires'])
+
+  with pytest.warns(None) as warn_recorder:
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+  # Should be no warnings issued.
+  assert not warn_recorder
 
 
 class TestTags:
@@ -118,3 +147,108 @@ def test_num_fields_more_than_model_raises():
 
   with pytest.raises(ValueError):
     n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+
+class TestFindInvalidHtmlTagsInField:
+  def test_ok(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<h1>') == []
+
+  def test_ok_with_space(self):
+    assert genanki.Note._find_invalid_html_tags_in_field(' <h1> ') == []
+
+  def test_ok_multiple(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<h1>test</h1>') == []
+
+  def test_ok_br(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<br>') == []
+
+  def test_ok_br2(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<br/>') == []
+
+  def test_ok_br3(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<br />') == []
+
+  def test_ok_attrs(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<h1 style="color: red">STOP</h1>') == []
+
+  def test_ng_empty(self):
+    assert genanki.Note._find_invalid_html_tags_in_field(' hello <> goodbye') == ['<>']
+
+  def test_ng_empty_space(self):
+    assert genanki.Note._find_invalid_html_tags_in_field(' hello < > goodbye') == ['< >']
+
+  def test_ng_invalid_characters(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<@h1>') == ['<@h1>']
+
+  def test_ng_invalid_characters_end(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<h1@>') == ['<h1@>']
+
+  def test_ng_issue_28(self):
+    latex_code = r'''
+        [latex]
+        \schemestart
+        \chemfig{*6(--(<OH)-(<:Br)---)}
+        \arrow{->[?]}
+        \chemfig{*6(--(<[:30]{O}?)(<:H)-?[,{>},](<:H)---)}
+        \schemestop
+        [/latex]
+        '''
+    latex_code = textwrap.dedent(latex_code[1:])
+
+    expected_invalid_tags = [
+      '<OH)-(<:Br)---)}\n\\arrow{->',
+      '<[:30]{O}?)(<:H)-?[,{>',
+    ]
+
+    assert genanki.Note._find_invalid_html_tags_in_field(latex_code) == expected_invalid_tags
+
+
+def test_warns_on_invalid_html_tags():
+  my_model = genanki.Model(
+    1376484377,
+    'Simple Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  my_note = genanki.Note(
+    model=my_model,
+    fields=['Capital of <$> Argentina', 'Buenos Aires'])
+
+  with pytest.warns(UserWarning, match='^Field contained the following invalid HTML tags.*$'):
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+
+def test_suppress_warnings(recwarn):
+  my_model = genanki.Model(
+    1376484377,
+    'Simple Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  my_note = genanki.Note(
+    model=my_model,
+    fields=['Capital of <$> Argentina', 'Buenos Aires'])
+
+  with pytest.warns(None) as warn_recorder:
+    warnings.filterwarnings('ignore', message='^Field contained the following invalid HTML tags', module='genanki')
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+  assert not warn_recorder
