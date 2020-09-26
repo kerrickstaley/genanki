@@ -2,6 +2,34 @@ import pytest
 import genanki
 from unittest import mock
 import textwrap
+import warnings
+
+
+def test_ok():
+  my_model = genanki.Model(
+    1376484377,
+    'Simple Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  my_note = genanki.Note(
+    model=my_model,
+    fields=['Capital of Argentina', 'Buenos Aires'])
+
+  with pytest.warns(None) as warn_recorder:
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+  # Should be no warnings issued.
+  assert not warn_recorder
 
 
 class TestTags:
@@ -121,7 +149,7 @@ def test_num_fields_more_than_model_raises():
     n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
 
 
-class TestFindInvalidHtmlTagsInFied:
+class TestFindInvalidHtmlTagsInField:
   def test_ok(self):
     assert genanki.Note._find_invalid_html_tags_in_field('<h1>') == []
 
@@ -170,3 +198,54 @@ class TestFindInvalidHtmlTagsInFied:
     ]
 
     assert genanki.Note._find_invalid_html_tags_in_field(latex_code) == expected_invalid_tags
+
+
+def test_warns_on_invalid_html_tags():
+  my_model = genanki.Model(
+    1376484377,
+    'Simple Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  my_note = genanki.Note(
+    model=my_model,
+    fields=['Capital of <$> Argentina', 'Buenos Aires'])
+
+  with pytest.warns(UserWarning, match='^Field contained the following invalid HTML tags.*$'):
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+
+def test_suppress_warnings(recwarn):
+  my_model = genanki.Model(
+    1376484377,
+    'Simple Model',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+      },
+    ])
+
+  my_note = genanki.Note(
+    model=my_model,
+    fields=['Capital of <$> Argentina', 'Buenos Aires'])
+
+  with pytest.warns(None) as warn_recorder:
+    warnings.filterwarnings('ignore', message='^Field contained the following invalid HTML tags', module='genanki')
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+  assert not warn_recorder
