@@ -134,6 +134,12 @@ class Note:
     for idx, field in enumerate(self.fields):
       invalid_tags = self._find_invalid_html_tags_in_field(field)
       if invalid_tags:
+        # You can disable the below warning by calling warnings.filterwarnings:
+        #
+        # warnings.filterwarnings('ignore', module='genanki', message='^Field contained the following invalid HTML tags')
+        #
+        # If you think you're getting a false positive for this warning, please file an issue at
+        # https://github.com/kerrickstaley/genanki/issues
         warnings.warn("Field contained the following invalid HTML tags. Make sure you are calling html.escape() if"
                       " your field data isn't already HTML-encoded: {}".format(' '.join(invalid_tags)))
 
