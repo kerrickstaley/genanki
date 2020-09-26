@@ -18,7 +18,7 @@ my_note = genanki.Note(
   fields=['Capital of Argentina', 'Buenos Aires'])
 ```
 
-You pass in a `Model`, discussed below, and a set of `fields`.
+You pass in a `Model`, discussed below, and a set of `fields` (encoded as HTML).
 
 ## Models
 A `Model` defines the fields and cards for a type of `Note`. For example:
@@ -136,6 +136,24 @@ for fields.
 `genanki` supports adding generated notes to the local collection when running inside an Anki 2.1 addon (Anki 2.0
 may work but has not been tested). See the [`.write_to_collection_from_addon() method`](
 https://github.com/kerrickstaley/genanki/blob/0c2cf8fea9c5e382e2fae9cd6d5eb440e267c637/genanki/__init__.py#L275).
+
+## FAQ
+### My field data is getting garbled
+If fields in your notes contain literal `<`, `>`, or `&` characters, you need to HTML-encode them: field data is HTML, not plain text. You can use the [`html.escape`](https://docs.python.org/3/library/html.html#html.escape) function.
+
+For example, you should write
+```
+fields=['AT&amp;T was originally called', 'Bell Telephone Company']
+```
+or
+```
+fields=[html.escape(f) for f in ['AT&T was originally called', 'Bell Telephone Company']]
+```
+
+This applies even if the content is LaTeX; for example, you should write
+```
+fields=['Piketty calls this the "central contradiction of capitalism".', '[latex]r &gt; g[/latex]']
+```
 
 ## Publishing to PyPI
 If your name is Kerrick, you can publish the `genanki` package to PyPI by running these commands from the root of the `genanki` repo:
