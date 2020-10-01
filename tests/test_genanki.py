@@ -122,6 +122,7 @@ class TestWithCollection:
     all_imported_decks = self.col.decks.all()
     assert len(all_imported_decks) == 2  # default deck and foodeck
     imported_deck = all_imported_decks[1]
+    
     assert imported_deck['name'] == 'foodeck'
 
   def test_generated_deck_has_valid_cards(self):
@@ -255,6 +256,7 @@ class TestWithCollection:
       h.write(VALID_JPG)
 
     self.import_package(genanki.Package(deck, media_files=[present_mp3_path, present_jpg_path]))
+    
     missing, unused, invalid = self.check_media()
     assert set(missing) == {'missing.mp3', 'missing.jpg'}
 
@@ -302,6 +304,7 @@ class TestWithCollection:
     all_decks = self.col.decks.all()
     assert len(all_decks) == 2  # default deck and foodeck
     imported_deck = all_decks[1]
+    
     assert imported_deck['desc'] == 'This is my great deck.\nIt is so so great.'
 
 
