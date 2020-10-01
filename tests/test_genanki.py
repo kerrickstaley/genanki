@@ -232,8 +232,8 @@ class TestWithCollection:
     os.remove('present.mp3')
     os.remove('present.jpg')
 
-    ret = self.check_media()
-    assert set(ret.missing) == {'missing.mp3', 'missing.jpg'}
+    missing, unused, invalid = self.check_media()
+    assert set(missing) == {'missing.mp3', 'missing.jpg'}
 
   def test_media_files_absolute_paths(self):
     # change to a scratch directory so we can write files
@@ -255,8 +255,8 @@ class TestWithCollection:
       h.write(VALID_JPG)
 
     self.import_package(genanki.Package(deck, media_files=[present_mp3_path, present_jpg_path]))
-    ret = self.check_media()
-    assert set(ret.missing) == {'missing.mp3', 'missing.jpg'}
+    missing, unused, invalid = self.check_media()
+    assert set(missing) == {'missing.mp3', 'missing.jpg'}
 
   def test_write_deck_without_deck_id_fails(self):
     # change to a scratch directory so we can write files
