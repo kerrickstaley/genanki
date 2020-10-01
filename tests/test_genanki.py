@@ -305,4 +305,27 @@ class TestWithCollection:
     assert imported_deck['desc'] == 'This is my great deck.\nIt is so so great.'
 
 
-  
+  def test_multi_deck_package_as_bytes(self):
+      deck1 = genanki.Deck(123456, 'foodeck')
+      deck2 = genanki.Deck(654321, 'bardeck')
+
+      note = genanki.Note(TEST_MODEL, ['a', 'b'])
+
+      deck1.add_note(note)
+      deck2.add_note(note)
+
+      pkg = genanki.Package([deck1, deck2]).get_pkg_as_bytes()
+
+      #test writing bytes to disk to make sure still readable as valid anki package
+      test_pkg = "test.apkg"
+      with open(test_pkg, 'wb') as f:
+        f.write(pkg.getbuffer())
+
+      importer = anki.importing.apkg.AnkiPackageImporter(self.col, test_pkg)
+      importer.run()
+
+      #cleanup file
+      os.remove(test_pkg)
+
+      all_imported_decks = self.col.decks.all()
+      assert len(all_imported_decks) == 3  # default deck, foodeck, and bardeck

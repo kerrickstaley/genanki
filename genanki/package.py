@@ -1,5 +1,6 @@
 import json
 import os
+import io
 import sqlite3
 import tempfile
 import time
@@ -40,6 +41,34 @@ class Package:
 
       for idx, path in media_file_idx_to_path.items():
         outzip.write(path, str(idx))
+    
+
+  def get_pkg_as_bytes(self):
+      dbfile, dbfilename = tempfile.mkstemp()
+      os.close(dbfile)
+
+      conn = sqlite3.connect(dbfilename)
+      cursor = conn.cursor()
+
+      now_ts = int(time.time())
+      self.write_to_db(cursor, now_ts)
+
+      conn.commit()
+      conn.close()
+
+      pkg_bytes = io.BytesIO()
+      with zipfile.ZipFile(pkg_bytes, 'w') as outzip:
+          outzip.write(dbfilename, 'collection.anki2')
+
+          media_file_idx_to_path = dict(enumerate(self.media_files))
+          media_json = {idx: os.path.basename(path) for idx, path in media_file_idx_to_path.items()}
+          outzip.writestr('media', json.dumps(media_json))
+
+          for idx, path in media_file_idx_to_path.items():
+              outzip.write(path, str(idx))
+
+      pkg_bytes.seek(0)
+      return pkg_bytes
 
   def write_to_db(self, cursor, now_ts):
     cursor.executescript(APKG_SCHEMA)
