@@ -127,5 +127,11 @@ def test_cloze_indicies_do_not_start_at_1():
   assert sorted(card.ord for card in note.cards) == [1, 2]
 
 
+def test_cloze_newlines_in_deletion():
+  fields = ['{{c1::Washington, D.C.}} is the capital of {{c2::the\nUnited States\nof America}}', '']
+  note = Note(model=MY_CLOZE_MODEL, fields=fields)
+  assert sorted(card.ord for card in note.cards) == [0, 1]
+
+
 if __name__ == '__main__':
   test_cloze(len(sys.argv) != 1)
