@@ -5,7 +5,7 @@ program. Please see below for concepts and usage.
 
 *This library and its author(s) are not affiliated/associated with the main Anki project in any way.*
 
-[![Build Status](https://travis-ci.org/kerrickstaley/genanki.svg?branch=master)](https://travis-ci.org/kerrickstaley/genanki)
+[![Build Status](https://api.travis-ci.com/kerrickstaley/genanki.svg?branch=master)](https://travis-ci.com/github/kerrickstaley/genanki)
 
 ## Notes
 The basic unit in Anki is the `Note`, which contains a fact to memorize. `Note`s correspond to one or more `Card`s.
@@ -18,7 +18,7 @@ my_note = genanki.Note(
   fields=['Capital of Argentina', 'Buenos Aires'])
 ```
 
-You pass in a `Model`, discussed below, and a set of `fields`.
+You pass in a `Model`, discussed below, and a set of `fields` (encoded as HTML).
 
 ## Models
 A `Model` defines the fields and cards for a type of `Note`. For example:
@@ -45,7 +45,7 @@ This note-type has two fields and one card. The card displays the `Question` fie
 CSS.
 
 You need to pass a `model_id` so that Anki can keep track of your model. It's important that you use a unique `model_id`
-for each `Model` you define. Use `random.randrange(1 << 30, 1 << 31)` to generate a suitable model_id, and hardcode it
+for each `Model` you define. Use `import random; random.randrange(1 << 30, 1 << 31)` to generate a suitable model_id, and hardcode it
 into your `Model` definition.
 
 ## Generating a Deck/Package
@@ -136,3 +136,30 @@ for fields.
 `genanki` supports adding generated notes to the local collection when running inside an Anki 2.1 addon (Anki 2.0
 may work but has not been tested). See the [`.write_to_collection_from_addon() method`](
 https://github.com/kerrickstaley/genanki/blob/0c2cf8fea9c5e382e2fae9cd6d5eb440e267c637/genanki/__init__.py#L275).
+
+## FAQ
+### My field data is getting garbled
+If fields in your notes contain literal `<`, `>`, or `&` characters, you need to HTML-encode them: field data is HTML, not plain text. You can use the [`html.escape`](https://docs.python.org/3/library/html.html#html.escape) function.
+
+For example, you should write
+```
+fields=['AT&amp;T was originally called', 'Bell Telephone Company']
+```
+or
+```
+fields=[html.escape(f) for f in ['AT&T was originally called', 'Bell Telephone Company']]
+```
+
+This applies even if the content is LaTeX; for example, you should write
+```
+fields=['Piketty calls this the "central contradiction of capitalism".', '[latex]r &gt; g[/latex]']
+```
+
+## Publishing to PyPI
+If your name is Kerrick, you can publish the `genanki` package to PyPI by running these commands from the root of the `genanki` repo:
+```
+rm -rf dist/*
+python3 setup.py sdist bdist_wheel
+python3 -m twine upload dist/*
+```
+Note that this directly uploads to prod PyPI and skips uploading to test PyPI.
