@@ -291,8 +291,8 @@ class TestWithCollection:
 
     self.import_package(genanki.Package(deck))
 
-    assert self.col.findCards('') == [1, 2]
-    assert self.col.findCards('is:suspended') == [2]
+    assert len(self.col.findCards('')) == 2
+    assert len(self.col.findCards('is:suspended')) == 1
 
   def test_deck_with_description(self):
     deck = genanki.Deck(112233, 'foodeck', description='This is my great deck.\nIt is so so great.')
