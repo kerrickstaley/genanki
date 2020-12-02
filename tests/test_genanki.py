@@ -89,7 +89,7 @@ class TestWithCollection:
     colf.close()  # colf is deleted
     self.col = anki.Collection(colf_name)
 
-  def import_package(self, pkg):
+  def import_package(self, pkg, timestamp=None):
     """
     Imports `pkg` into self.col.
 
@@ -98,7 +98,7 @@ class TestWithCollection:
     outf = tempfile.NamedTemporaryFile(suffix='.apkg', delete=False)
     outf.close()
 
-    pkg.write_to_file(outf.name)
+    pkg.write_to_file(outf.name, timestamp=timestamp)
 
     importer = anki.importing.apkg.AnkiPackageImporter(self.col, outf.name)
     importer.run()
@@ -289,7 +289,7 @@ class TestWithCollection:
 
     deck.add_note(note)
 
-    self.import_package(genanki.Package(deck))
+    self.import_package(genanki.Package(deck), timestamp=0)
 
     assert self.col.findCards('') == [1, 2]
     assert self.col.findCards('is:suspended') == [2]
@@ -307,7 +307,6 @@ class TestWithCollection:
 
     assert imported_deck['desc'] == 'This is my great deck.\nIt is so so great.'
 
-  @pytest.mark.xfail
   def test_card_added_date_is_recent(self):
     """
     Checks for a bug where cards were assigned the creation date 1970-01-01 (i.e. the Unix epoch).

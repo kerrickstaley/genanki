@@ -1,4 +1,6 @@
+import itertools
 import pytest
+import time
 import genanki
 from unittest import mock
 import textwrap
@@ -26,7 +28,7 @@ def test_ok():
     fields=['Capital of Argentina', 'Buenos Aires'])
 
   with pytest.warns(None) as warn_recorder:
-    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
 
   # Should be no warnings issued.
   assert not warn_recorder
@@ -97,7 +99,7 @@ def test_num_fields_equals_model_ok():
     fields=['What is the capital of Taiwan?', 'Taipei',
             'Taipei was originally inhabitied by the Ketagalan people prior to the arrival of Han settlers in 1709.'])
 
-  n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+  n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
   # test passes if code gets to here without raising
 
 
@@ -121,7 +123,7 @@ def test_num_fields_less_than_model_raises():
   n = genanki.Note(model=m, fields=['What is the capital of Taiwan?', 'Taipei'])
 
   with pytest.raises(ValueError):
-    n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+    n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
 
 
 def test_num_fields_more_than_model_raises():
@@ -146,7 +148,7 @@ def test_num_fields_more_than_model_raises():
             'Taipei was originally inhabitied by the Ketagalan people prior to the arrival of Han settlers in 1709.'])
 
   with pytest.raises(ValueError):
-    n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+    n.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
 
 
 class TestFindInvalidHtmlTagsInField:
@@ -224,7 +226,7 @@ def test_warns_on_invalid_html_tags():
     fields=['Capital of <$> Argentina', 'Buenos Aires'])
 
   with pytest.warns(UserWarning, match='^Field contained the following invalid HTML tags.*$'):
-    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
 
 
 def test_suppress_warnings(recwarn):
@@ -249,6 +251,6 @@ def test_suppress_warnings(recwarn):
 
   with pytest.warns(None) as warn_recorder:
     warnings.filterwarnings('ignore', message='^Field contained the following invalid HTML tags', module='genanki')
-    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
 
   assert not warn_recorder

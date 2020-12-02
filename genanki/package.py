@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import sqlite3
@@ -9,6 +10,8 @@ from .apkg_col import APKG_COL
 from .apkg_schema import APKG_SCHEMA
 from .deck import Deck
 
+from typing import Optional
+
 class Package:
   def __init__(self, deck_or_decks=None, media_files=None):
     if isinstance(deck_or_decks, Deck):
@@ -18,15 +21,24 @@ class Package:
 
     self.media_files = media_files or []
 
-  def write_to_file(self, file):
+  def write_to_file(self, file, timestamp: Optional[float] = None):
+    """
+    :param file: File path to write to.
+    :param timestamp: Timestamp (float seconds since Unix epoch) to assign to generated notes/cards. Can be used to
+        make build hermetic. Defaults to time.time().
+    """
     dbfile, dbfilename = tempfile.mkstemp()
     os.close(dbfile)
 
     conn = sqlite3.connect(dbfilename)
     cursor = conn.cursor()
 
-    now_ts = int(time.time())
-    self.write_to_db(cursor, now_ts)
+    if timestamp is None:
+      timestamp = time.time()
+
+    now_ts = int(timestamp)
+    id_gen = itertools.count(int(timestamp * 1000))
+    self.write_to_db(cursor, now_ts, id_gen)
 
     conn.commit()
     conn.close()
@@ -41,12 +53,12 @@ class Package:
       for idx, path in media_file_idx_to_path.items():
         outzip.write(path, str(idx))
 
-  def write_to_db(self, cursor, now_ts):
+  def write_to_db(self, cursor, now_ts, id_gen):
     cursor.executescript(APKG_SCHEMA)
     cursor.executescript(APKG_COL)
 
     for deck in self.decks:
-      deck.write_to_db(cursor, now_ts)
+      deck.write_to_db(cursor, now_ts, id_gen)
 
   def write_to_collection_from_addon(self):
     """
