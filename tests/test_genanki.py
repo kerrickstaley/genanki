@@ -306,3 +306,26 @@ class TestWithCollection:
     imported_deck = all_decks[1]
 
     assert imported_deck['desc'] == 'This is my great deck.\nIt is so so great.'
+
+  @pytest.mark.xfail
+  def test_note_added_date_is_recent(self):
+    """
+    Checks for a bug where notes were assigned the creation date 1970-01-01 (i.e. the Unix epoch).
+
+    See https://github.com/kerrickstaley/genanki/issues/29 .
+
+    The "Added" date is encoded in the card.id field; see
+    https://github.com/ankitects/anki/blob/ed8340a4e3a2006d6285d7adf9b136c735ba2085/anki/stats.py#L28
+
+    TODO implement a fix so that this test passes.
+    """
+    deck = genanki.Deck(1104693946, 'foodeck')
+    note = genanki.Note(TEST_MODEL, ['a', 'b'])
+    deck.add_note(note)
+
+    self.import_package(genanki.Package(deck))
+
+    anki_note = self.col.getNote(self.col.findNotes('')[0])
+    anki_card = anki_note.cards()[0]
+
+    assert anki_card.id > 1577836800000  # Jan 1 2020 UTC (milliseconds since epoch)
