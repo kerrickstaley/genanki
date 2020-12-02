@@ -143,14 +143,14 @@ class Note:
         warnings.warn("Field contained the following invalid HTML tags. Make sure you are calling html.escape() if"
                       " your field data isn't already HTML-encoded: {}".format(' '.join(invalid_tags)))
 
-  def write_to_db(self, cursor, now_ts, deck_id, id_gen):
+  def write_to_db(self, cursor, timestamp: float, deck_id, id_gen):
     self._check_number_model_fields_matches_num_fields()
     self._check_invalid_html_tags_in_fields()
     cursor.execute('INSERT INTO notes VALUES(?,?,?,?,?,?,?,?,?,?,?);', (
         next(id_gen),                 # id
         self.guid,                    # guid
         self.model.model_id,          # mid
-        now_ts,                       # mod
+        int(timestamp),               # mod
         -1,                           # usn
         self._format_tags(),          # TODO tags
         self._format_fields(),        # flds
@@ -162,7 +162,7 @@ class Note:
 
     note_id = cursor.lastrowid
     for card in self.cards:
-      card.write_to_db(cursor, now_ts, deck_id, note_id, id_gen)
+      card.write_to_db(cursor, timestamp, deck_id, note_id, id_gen)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)

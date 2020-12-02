@@ -36,9 +36,8 @@ class Package:
     if timestamp is None:
       timestamp = time.time()
 
-    now_ts = int(timestamp)
     id_gen = itertools.count(int(timestamp * 1000))
-    self.write_to_db(cursor, now_ts, id_gen)
+    self.write_to_db(cursor, timestamp, id_gen)
 
     conn.commit()
     conn.close()
@@ -53,12 +52,12 @@ class Package:
       for idx, path in media_file_idx_to_path.items():
         outzip.write(path, str(idx))
 
-  def write_to_db(self, cursor, now_ts, id_gen):
+  def write_to_db(self, cursor, timestamp: float, id_gen):
     cursor.executescript(APKG_SCHEMA)
     cursor.executescript(APKG_COL)
 
     for deck in self.decks:
-      deck.write_to_db(cursor, now_ts, id_gen)
+      deck.write_to_db(cursor, timestamp, id_gen)
 
   def write_to_collection_from_addon(self):
     """

@@ -82,7 +82,7 @@ class Model:
 
     return req
 
-  def to_json(self, now_ts, deck_id):
+  def to_json(self, timestamp: float, deck_id):
     for ord_, tmpl in enumerate(self.templates):
       tmpl['ord'] = ord_
       tmpl.setdefault('bafmt', '')
@@ -109,7 +109,7 @@ class Model:
                   "\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n"
                   "\\begin{document}\n",
       "latexsvg": False,
-      "mod": now_ts,
+      "mod": int(timestamp),
       "name": self.name,
       "req": self._req,
       "sortf": 0,
