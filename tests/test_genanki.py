@@ -308,9 +308,9 @@ class TestWithCollection:
     assert imported_deck['desc'] == 'This is my great deck.\nIt is so so great.'
 
   @pytest.mark.xfail
-  def test_note_added_date_is_recent(self):
+  def test_card_added_date_is_recent(self):
     """
-    Checks for a bug where notes were assigned the creation date 1970-01-01 (i.e. the Unix epoch).
+    Checks for a bug where cards were assigned the creation date 1970-01-01 (i.e. the Unix epoch).
 
     See https://github.com/kerrickstaley/genanki/issues/29 .
 
