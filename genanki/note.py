@@ -124,7 +124,10 @@ class Note:
 
   def _check_number_model_fields_matches_num_fields(self):
     if len(self.model.fields) != len(self.fields):
-      raise ValueError('Number of fields in Model does not match number of fields in Note')
+      raise ValueError(
+          'Number of fields in Model does not match number of fields in Note: '
+          '{} has {} fields, but {} has {} fields.'.format(
+              self.model, len(self.model.fields), self, len(self.fields)))
 
   @classmethod
   def _find_invalid_html_tags_in_field(cls, field):
