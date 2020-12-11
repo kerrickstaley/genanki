@@ -119,3 +119,8 @@ class Model:
       "usn": -1,
       "vers": []
     }
+
+  def __repr__(self):
+    attrs = ['model_id', 'name', 'fields', 'templates', 'css', 'model_type']
+    pieces = ['{}={}'.format(attr, repr(getattr(self, attr))) for attr in attrs]
+    return '{}({})'.format(self.__class__.__name__, ', '.join(pieces))

@@ -169,3 +169,8 @@ class Note:
 
   def _format_tags(self):
     return ' ' + ' '.join(self.tags) + ' '
+
+  def __repr__(self):
+    attrs = ['model', 'fields', 'sort_field', 'tags', 'guid']
+    pieces = ['{}={}'.format(attr, repr(getattr(self, attr))) for attr in attrs]
+    return '{}({})'.format(self.__class__.__name__, ', '.join(pieces))
