@@ -8,8 +8,11 @@ BASE91_TABLE = [
   ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~']
 
 
-def guid_for(*values):
+def guid_for(*values, model_id=None):
   hash_str = '__'.join(str(val) for val in values)
+
+  if model_id is not None:
+    hash_str += '__' + str(model_id)
 
   # get the first 8 bytes of the SHA256 of hash_str as an int
   m = hashlib.sha256()

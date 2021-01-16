@@ -25,7 +25,8 @@ def test_ok():
 
   my_note = genanki.Note(
     model=my_model,
-    fields=['Capital of Argentina', 'Buenos Aires'])
+    fields=['Capital of Argentina', 'Buenos Aires'],
+    guid_method='0.11')
 
   with pytest.warns(None) as warn_recorder:
     my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
@@ -247,7 +248,8 @@ def test_suppress_warnings(recwarn):
 
   my_note = genanki.Note(
     model=my_model,
-    fields=['Capital of <$> Argentina', 'Buenos Aires'])
+    fields=['Capital of <$> Argentina', 'Buenos Aires'],
+    guid_method='0.11')
 
   with pytest.warns(None) as warn_recorder:
     warnings.filterwarnings('ignore', message='^Field contained the following invalid HTML tags', module='genanki')

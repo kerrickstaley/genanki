@@ -4,6 +4,7 @@ from cached_property import cached_property
 
 from .card import Card
 from .util import guid_for
+import genanki
 
 
 class _TagList(list):
@@ -48,8 +49,11 @@ class _TagList(list):
 
 class Note:
   _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-z0-9]+(?: .*|/?)>)(?:.|\n)*?>')
+  _GUID_METHOD_OLD = 'old'
+  _GUID_METHOD_0_11 = '0.11'
+  _VALID_GUID_METHODS = [None, _GUID_METHOD_OLD, _GUID_METHOD_0_11]
 
-  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
+  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None, guid_method=None):
     self.model = model
     self.fields = fields
     self.sort_field = sort_field
@@ -59,6 +63,7 @@ class Note:
     except AttributeError:
       # guid was defined as a property
       pass
+    self.guid_method = guid_method
 
   @property
   def sort_field(self):
@@ -115,7 +120,29 @@ class Note:
   @property
   def guid(self):
     if self._guid is None:
-      return guid_for(*self.fields)
+      if self.guid_method is None:
+        warnings.warn(
+          ('guid_method is not set. Add this code near the top of your Python file:\n'
+           + '  genanki.guid_method = {new}\n'
+           + 'If this deck is already in use (e.g. published to AnkiWeb), use the old guid_method instead:\n'
+           + '  genanki.guid_method = {old}\n'
+           + "The default will change in a later version of genanki, so if you don't explicitly set guid_method, the "
+           + "GUIDs of your notes will change when you upgrade genanki.\n"
+           + "You can also set this on an individual Note if you don't want to change it globally:\n"
+           + '  my_note.guid_method = {new}  # or {old}\n'
+           + 'See [TODO DOC LINK] for details on why this is necessary.').format(
+             old=self._GUID_METHOD_OLD, new=self._GUID_METHOD_OLD))
+        return guid_for(*self.fields)
+      elif self.guid_method is self._GUID_METHOD_OLD:
+        return guid_for(*self.fields)
+      else:  # _GUID_METHOD_0_11
+        if self.model is None:
+          raise ValueError('.model field is None on Note {}. Need .model to calculate GUID.'.format(repr(self)))
+        if self.model.model_id is None:
+          raise ValueError('.model_id field of Model is None on Note {}. Need .model_id to calculate GUID.'.format(repr(self)))
+
+        return guid_for(*self.fields, model_id=self.model.model_id)
+
     return self._guid
 
   @guid.setter
@@ -128,6 +155,26 @@ class Note:
           'Number of fields in Model does not match number of fields in Note: '
           '{} has {} fields, but {} has {} fields.'.format(
               self.model, len(self.model.fields), self, len(self.fields)))
+
+  @property
+  def guid_method(self):
+    if self._guid_method is not None:
+      ret = self._guid_method
+    else:
+      ret = genanki.guid_method
+
+    if ret not in self._VALID_GUID_METHODS:
+      raise ValueError('guid_method {} is not valid; valid values are {}'.format(
+          repr(ret), repr(self._VALID_GUID_METHODS)))
+
+    return ret
+
+  @guid_method.setter
+  def guid_method(self, val):
+    if val not in self._VALID_GUID_METHODS:
+      raise ValueError('guid_method {} is not valid; valid values are {}'.format(
+          repr(val), repr(self._VALID_GUID_METHODS)))
+    self._guid_method = val
 
   @classmethod
   def _find_invalid_html_tags_in_field(cls, field):
