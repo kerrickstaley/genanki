@@ -7,14 +7,21 @@ class Model:
 
   FRONT_BACK = 0
   CLOZE = 1
+  DEFAULT_LATEX_PRE = ('\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n'
+                       + '\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n'
+                       + '\\begin{document}\n')
+  DEFAULT_LATEX_POST = '\\end{document}'
 
-  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', model_type=FRONT_BACK):
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', model_type=FRONT_BACK,
+               latex_pre=DEFAULT_LATEX_PRE, latex_post=DEFAULT_LATEX_POST):
     self.model_id = model_id
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
     self.css = css
     self.model_type = model_type
+    self.latex_pre = latex_pre
+    self.latex_post = latex_post
 
   def set_fields(self, fields):
     if isinstance(fields, list):
@@ -104,10 +111,8 @@ class Model:
       "did": deck_id,
       "flds": self.fields,
       "id": str(self.model_id),
-      "latexPost": "\\end{document}",
-      "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n"
-                  "\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n"
-                  "\\begin{document}\n",
+      "latexPost": self.latex_post,
+      "latexPre": self.latex_pre,
       "latexsvg": False,
       "mod": int(timestamp),
       "name": self.name,

@@ -65,6 +65,36 @@ TEST_MODEL_WITH_HINT = genanki.Model(
   ],
 )
 
+# Same as default latex_pre but we include amsfonts package
+CUSTOM_LATEX_PRE = ('\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n'
+                    + '\\usepackage{amssymb,amsmath,amsfonts}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n'
+                    + '\\begin{document}\n')
+# Same as default latex_post but we add a comment. (What is a real-world use-case for customizing latex_post?)
+CUSTOM_LATEX_POST = '% here is a great comment\n\\end{document}'
+
+TEST_MODEL_WITH_LATEX = genanki.Model(
+  567890, 'with latex',
+  fields=[
+    {
+      'name': 'AField',
+    },
+    {
+      'name': 'BField',
+    },
+  ],
+  templates=[
+    {
+      'name': 'card1',
+      'qfmt': '{{AField}}',
+      'afmt': '{{FrontSide}}'
+              '<hr id="answer">'
+              '{{BField}}',
+    }
+  ],
+  latex_pre=CUSTOM_LATEX_PRE,
+  latex_post=CUSTOM_LATEX_POST,
+)
+
 # VALID_MP3 and VALID_JPG courtesy of https://github.com/mathiasbynens/small
 VALID_MP3 = (
   b'\xff\xe3\x18\xc4\x00\x00\x00\x03H\x00\x00\x00\x00LAME3.98.2\x00\x00\x00'
@@ -328,3 +358,14 @@ class TestWithCollection:
     anki_card = anki_note.cards()[0]
 
     assert anki_card.id > 1577836800000  # Jan 1 2020 UTC (milliseconds since epoch)
+
+  def test_model_with_latex_pre_and_post(self):
+    deck = genanki.Deck(1681249286, 'foodeck')
+    note = genanki.Note(TEST_MODEL_WITH_LATEX, ['a', 'b'])
+    deck.add_note(note)
+
+    self.import_package(genanki.Package(deck))
+
+    anki_note = self.col.getNote(self.col.findNotes('')[0])
+    assert anki_note.model()['latexPre'] == CUSTOM_LATEX_PRE
+    assert anki_note.model()['latexPost'] == CUSTOM_LATEX_POST
