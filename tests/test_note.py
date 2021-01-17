@@ -227,3 +227,123 @@ def test_suppress_warnings(recwarn):
     my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
 
   assert not warn_recorder
+
+
+class TestGuidMethod:
+  def setup(self):
+    self.genanki_guid_method_saved = genanki.guid_method
+
+  def teardown(self):
+    genanki.guid_method = self.genanki_guid_method_saved
+
+  def test_no_guid_method_set_warns(self):
+    my_note = genanki.Note(
+      model=SIMPLE_MODEL,
+      fields=['Capital of Argentina', 'Buenos Aires'])
+
+    with pytest.warns(UserWarning, match='^guid_method is not set') as warn_recorder:
+      my_note.guid
+
+  def test_guid_method_set_on_note_does_not_warn(self):
+    my_note1 = genanki.Note(
+      model=SIMPLE_MODEL,
+      fields=['Capital of Argentina', 'Buenos Aires'],
+      guid_method='old')
+
+    my_note2 = genanki.Note(
+      model=SIMPLE_MODEL,
+      fields=['Capital of Argentina', 'Buenos Aires'],
+      guid_method='0.11')
+
+    with pytest.warns(None) as warn_recorder:
+      my_note1.guid
+      my_note2.guid
+
+    assert not warn_recorder
+
+  def test_guid_method_set_globally_does_not_warn(self):
+    my_note = genanki.Note(
+      model=SIMPLE_MODEL,
+      fields=['Capital of Argentina', 'Buenos Aires'])
+
+    genanki.guid_method = 'old'
+
+    with pytest.warns(None) as warn_recorder1:
+      my_note.guid
+
+    assert not warn_recorder1
+
+    genanki.guid_method = '0.11'
+
+    with pytest.warns(None) as warn_recorder2:
+      my_note.guid
+
+    assert not warn_recorder2
+
+  def test_guid_method_set_on_note_changes_guid(self):
+    my_note1 = genanki.Note(
+      model=SIMPLE_MODEL,
+      fields=['Capital of Argentina', 'Buenos Aires'],
+      guid_method='old')
+
+    my_note2 = genanki.Note(
+      model=SIMPLE_MODEL,
+      fields=['Capital of Argentina', 'Buenos Aires'],
+      guid_method='0.11')
+
+    assert my_note1.guid == 'HSnG{z%dU<'
+    assert my_note2.guid == 'w%C983W&N)'
+
+  def test_guid_method_set_globally_changes_guid(self):
+    my_note = genanki.Note(
+      model=SIMPLE_MODEL,
+      fields=['Capital of Argentina', 'Buenos Aires'])
+
+    genanki.guid_method = 'old'
+
+    assert my_note.guid == 'HSnG{z%dU<'
+
+    genanki.guid_method = '0.11'
+
+    assert my_note.guid == 'w%C983W&N)'
+
+  def test_no_model_set_raises_value_error(self):
+    my_note = genanki.Note(
+      fields=['Capital of Argentina', 'Buenos Aires'])
+
+    genanki.guid_method = 'old'
+
+    my_note.guid
+
+    genanki.guid_method = '0.11'
+
+    with pytest.raises(ValueError):
+      my_note.guid
+
+  def test_no_model_id_raises_value_error(self):
+    model_no_id = genanki.Model(
+      name='Simple Model',
+      fields=[
+        {'name': 'Question'},
+        {'name': 'Answer'},
+      ],
+      templates=[
+        {
+          'name': 'Card 1',
+          'qfmt': '{{Question}}',
+          'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+        },
+      ])
+
+    my_note = genanki.Note(
+      model=model_no_id,
+      fields=['Capital of Argentina', 'Buenos Aires'])
+
+    genanki.guid_method = 'old'
+
+    my_note.guid
+
+    genanki.guid_method = '0.11'
+
+    with pytest.raises(ValueError):
+      my_note.guid

@@ -131,15 +131,15 @@ class Note:
            + "You can also set this on an individual Note if you don't want to change it globally:\n"
            + '  my_note.guid_method = {new}  # or {old}\n'
            + 'See [TODO DOC LINK] for details on why this is necessary.').format(
-             old=self._GUID_METHOD_OLD, new=self._GUID_METHOD_OLD))
+             old=repr(self._GUID_METHOD_OLD), new=repr(self._GUID_METHOD_0_11)))
         return guid_for(*self.fields)
       elif self.guid_method is self._GUID_METHOD_OLD:
         return guid_for(*self.fields)
       else:  # _GUID_METHOD_0_11
         if self.model is None:
-          raise ValueError('.model field is None on Note {}. Need .model to calculate GUID.'.format(repr(self)))
+          raise ValueError('.model field is None on Note {}. Need .model to calculate GUID.'.format(self.__repr__(skip_attrs=['guid'])))
         if self.model.model_id is None:
-          raise ValueError('.model_id field of Model is None on Note {}. Need .model_id to calculate GUID.'.format(repr(self)))
+          raise ValueError('.model_id field of Model is None on Note {}. Need .model_id to calculate GUID.'.format(self.__repr__(skip_attrs=['guid'])))
 
         return guid_for(*self.fields, model_id=self.model.model_id)
 
@@ -220,7 +220,7 @@ class Note:
   def _format_tags(self):
     return ' ' + ' '.join(self.tags) + ' '
 
-  def __repr__(self):
+  def __repr__(self, skip_attrs=()):
     attrs = ['model', 'fields', 'sort_field', 'tags', 'guid']
-    pieces = ['{}={}'.format(attr, repr(getattr(self, attr))) for attr in attrs]
+    pieces = ['{}={}'.format(attr, '?' if attr in skip_attrs else repr(getattr(self, attr))) for attr in attrs]
     return '{}({})'.format(self.__class__.__name__, ', '.join(pieces))
