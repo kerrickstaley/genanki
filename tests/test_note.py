@@ -237,6 +237,8 @@ class TestGuidMethod:
     genanki.guid_method = self.genanki_guid_method_saved
 
   def test_no_guid_method_set_warns(self):
+    genanki.guid_method = None
+
     my_note = genanki.Note(
       model=SIMPLE_MODEL,
       fields=['Capital of Argentina', 'Buenos Aires'])
