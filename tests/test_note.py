@@ -7,24 +7,25 @@ import textwrap
 import warnings
 
 
-def test_ok():
-  my_model = genanki.Model(
-    1376484377,
-    'Simple Model',
-    fields=[
-      {'name': 'Question'},
-      {'name': 'Answer'},
-    ],
-    templates=[
-      {
-        'name': 'Card 1',
-        'qfmt': '{{Question}}',
-        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
-      },
-    ])
+SIMPLE_MODEL = genanki.Model(
+  1376484377,
+  'Simple Model',
+  fields=[
+    {'name': 'Question'},
+    {'name': 'Answer'},
+  ],
+  templates=[
+    {
+      'name': 'Card 1',
+      'qfmt': '{{Question}}',
+      'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+    },
+  ])
 
+
+def test_ok():
   my_note = genanki.Note(
-    model=my_model,
+    model=SIMPLE_MODEL,
     fields=['Capital of Argentina', 'Buenos Aires'],
     guid_method='0.11')
 
@@ -207,23 +208,8 @@ class TestFindInvalidHtmlTagsInField:
 
 
 def test_warns_on_invalid_html_tags():
-  my_model = genanki.Model(
-    1376484377,
-    'Simple Model',
-    fields=[
-      {'name': 'Question'},
-      {'name': 'Answer'},
-    ],
-    templates=[
-      {
-        'name': 'Card 1',
-        'qfmt': '{{Question}}',
-        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
-      },
-    ])
-
   my_note = genanki.Note(
-    model=my_model,
+    model=SIMPLE_MODEL,
     fields=['Capital of <$> Argentina', 'Buenos Aires'])
 
   with pytest.warns(UserWarning, match='^Field contained the following invalid HTML tags.*$'):
@@ -231,23 +217,8 @@ def test_warns_on_invalid_html_tags():
 
 
 def test_suppress_warnings(recwarn):
-  my_model = genanki.Model(
-    1376484377,
-    'Simple Model',
-    fields=[
-      {'name': 'Question'},
-      {'name': 'Answer'},
-    ],
-    templates=[
-      {
-        'name': 'Card 1',
-        'qfmt': '{{Question}}',
-        'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
-      },
-    ])
-
   my_note = genanki.Note(
-    model=my_model,
+    model=SIMPLE_MODEL,
     fields=['Capital of <$> Argentina', 'Buenos Aires'],
     guid_method='0.11')
 
