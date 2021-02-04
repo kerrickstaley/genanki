@@ -1,7 +1,7 @@
 from copy import copy
 from cached_property import cached_property
-import pystache
-import yaml
+from .. import pystache
+from .. import yaml
 
 class Model:
 
