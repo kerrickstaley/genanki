@@ -62,7 +62,7 @@ class Note:
 
   @property
   def sort_field(self):
-    return self._sort_field or self.fields[self.model.sort_field_id]
+    return self._sort_field or self.fields[self.model.sort_field_index]
 
   @sort_field.setter
   def sort_field(self, val):
