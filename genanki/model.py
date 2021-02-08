@@ -12,7 +12,7 @@ class Model:
                        + '\\begin{document}\n')
   DEFAULT_LATEX_POST = '\\end{document}'
 
-  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', model_type=FRONT_BACK, sort_field_index=1,
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', model_type=FRONT_BACK, sort_field_index=0,
                latex_pre=DEFAULT_LATEX_PRE, latex_post=DEFAULT_LATEX_POST):
     self.model_id = model_id
     self.name = name
