@@ -128,6 +128,8 @@ interface. Anki also is happier if you avoid having two notes with the same `sor
 necessary. By default, the `sort_field` is the first field, but you can change it by passing `sort_field=` to `Note()`
 or implementing `sort_field` as a property in a subclass (similar to `guid`).
 
+You can also pass `sort_field_index=` to `Model()` to change the sort field. `0` means the first field in the Note, `1` means the second, etc.
+
 ## YAML for Templates (and Fields)
 You can create your template definitions in the YAML format and pass them as a `str` to `Model()`. You can also do this
 for fields.
