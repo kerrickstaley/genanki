@@ -1,0 +1,28 @@
+name: CI
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        py: [3.6, 3.9]
+        include:
+          - os: ubuntu
+            py-cmd: python
+          - os: macos
+            py-cmd: python3
+          - os: windows
+            py-cmd: python
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.py }}
+      - run: ${{ matrix.py-cmd }} -m pip install -e .[test] pytest-cov codecov anki
+      - run: ${{ matrix.py-cmd }} -m pytest --cov genanki --cov-report term-missing:skip-covered
