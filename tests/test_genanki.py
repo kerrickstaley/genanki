@@ -95,6 +95,29 @@ TEST_MODEL_WITH_LATEX = genanki.Model(
   latex_post=CUSTOM_LATEX_POST,
 )
 
+CUSTOM_SORT_FIELD_INDEX = 1  # Anki default value is 0
+TEST_MODEL_WITH_SORT_FIELD_INDEX = genanki.Model(
+  987123, 'with sort field index',
+  fields=[
+    {
+      'name': 'AField',
+    },
+    {
+      'name': 'BField',
+    },
+  ],
+  templates=[
+    {
+      'name': 'card1',
+      'qfmt': '{{AField}}',
+      'afmt': '{{FrontSide}}'
+              '<hr id="answer">'
+              '{{BField}}',
+    }
+  ],
+  sort_field_index=CUSTOM_SORT_FIELD_INDEX,
+)
+
 # VALID_MP3 and VALID_JPG courtesy of https://github.com/mathiasbynens/small
 VALID_MP3 = (
   b'\xff\xe3\x18\xc4\x00\x00\x00\x03H\x00\x00\x00\x00LAME3.98.2\x00\x00\x00'
@@ -369,3 +392,13 @@ class TestWithCollection:
     anki_note = self.col.getNote(self.col.findNotes('')[0])
     assert anki_note.model()['latexPre'] == CUSTOM_LATEX_PRE
     assert anki_note.model()['latexPost'] == CUSTOM_LATEX_POST
+
+  def test_model_with_sort_field_index(self):
+      deck = genanki.Deck(332211, 'foodeck')
+      note = genanki.Note(TEST_MODEL_WITH_SORT_FIELD_INDEX, ['a', '3.A'])
+      deck.add_note(note)
+
+      self.import_package(genanki.Package(deck))
+
+      anki_note = self.col.getNote(self.col.findNotes('')[0])
+      assert anki_note.model()['sortf'] == CUSTOM_SORT_FIELD_INDEX
