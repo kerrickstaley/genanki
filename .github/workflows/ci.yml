@@ -8,9 +8,6 @@ on:
     branches:
       - master
 
-env:
-  ANKI_TEST_REVISION: ed8340a4e3a2006d6285d7adf9b136c735ba2085
-
 jobs:
   test:
     runs-on: ${{ matrix.os }}-latest
@@ -19,6 +16,7 @@ jobs:
       matrix:
         os: [ubuntu, macos, windows]
         python-version: [3.6, 3.8, 3.9]
+        anki-version: [ed8340a4e3a2006d6285d7adf9b136c735ba2085]
         exclude:
           # compatible pyaudio not available
           - os: windows
@@ -42,7 +40,7 @@ jobs:
       - run: |
           git clone https://github.com/ankitects/anki.git anki_upstream
           cd anki_upstream
-          git reset --hard $ANKI_TEST_REVISION
+          git reset --hard ${{ matrix.anki-version }}
           python3 -m pip install -r requirements.txt
       - run: |
           python3 -m pytest tests -vv --cov genanki --cov-report term-missing:skip-covered --no-cov-on-fail
