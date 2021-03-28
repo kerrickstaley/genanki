@@ -8,10 +8,6 @@ on:
     branches:
       - master
 
-defaults:
-  run:
-    shell: bash -l {0}
-
 env:
   ANKI_TEST_REVISION: ed8340a4e3a2006d6285d7adf9b136c735ba2085
 
@@ -22,20 +18,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macos, windows]
-        py: [3.6, 3.8, 3.9]
-        include:
-          - os: ubuntu
-            py-cmd: python
-          - os: macos
-            py-cmd: python3
-          - os: windows
-            py-cmd: python
+        python-version: [3.6, 3.8, 3.9]
         exclude:
           # compatible pyaudio not available
           - os: windows
-            py: 3.8
+            python-version: 3.8
           - os: windows
-            py: 3.9
+            python-version: 3.9
     steps:
       - uses: actions/checkout@v2
       - if: ${{ matrix.os == 'ubuntu' }}
@@ -44,16 +33,17 @@ jobs:
         run: brew install portaudio
       - uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.py }}
-      - run: ${{ matrix.py-cmd }} -m pip install --upgrade pip wheel setuptools
+          python-version: ${{ matrix.python-version }}
+      - run: python3 -m pip install --upgrade pip wheel setuptools
       - if: ${{ matrix.os == 'windows' }}
-        run: ${{ matrix.py-cmd }} -m pip install pywin32
-      - run: ${{ matrix.py-cmd }} -m pip install -e ".[test]" pytest-cov codecov
+        run: python3 -m pip install pywin32
+      - name: install package and tests_require from setup.py
+        run: python3 -m pip install -e ".[test]" pytest-cov codecov
       - run: |
           git clone https://github.com/ankitects/anki.git anki_upstream
           cd anki_upstream
           git reset --hard $ANKI_TEST_REVISION
-          ${{ matrix.py-cmd }} -m pip install -r requirements.txt
+          python3 -m pip install -r requirements.txt
       - run: |
-          ${{ matrix.py-cmd }} -m pytest tests -vv --cov genanki --cov-report term-missing:skip-covered --no-cov-on-fail
+          python3 -m pytest tests -vv --cov genanki --cov-report term-missing:skip-covered --no-cov-on-fail
       - run: codecov
