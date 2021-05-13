@@ -5,7 +5,7 @@ program. Please see below for concepts and usage.
 
 *This library and its author(s) are not affiliated/associated with the main Anki project in any way.*
 
-[![Build Status](https://api.travis-ci.com/kerrickstaley/genanki.svg?branch=master)](https://travis-ci.com/github/kerrickstaley/genanki)
+[![CI](https://github.com/kerrickstaley/genanki/actions/workflows/ci.yml/badge.svg)](https://github.com/kerrickstaley/genanki/actions/workflows/ci.yml)
 
 ## Notes
 The basic unit in Anki is the `Note`, which contains a fact to memorize. `Note`s correspond to one or more `Card`s.
