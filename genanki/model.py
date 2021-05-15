@@ -2,6 +2,7 @@ from copy import copy
 from cached_property import cached_property
 import pystache
 import yaml
+import re
 
 class Model:
 
@@ -49,37 +50,27 @@ class Model:
     """
     sentinel = 'SeNtInEl'
     field_names = [field['name'] for field in self.fields]
+    field_values = [(field, f"{field}{sentinel}") for field in field_names]
 
     req = []
     for template_ord, template in enumerate(self.templates):
-      field_values = {field: sentinel for field in field_names}
-      required_fields = []
-      for field_ord, field in enumerate(field_names):
-        fvcopy = copy(field_values)
-        fvcopy[field] = ''
+      rendered = pystache.render(template['qfmt'], dict(field_values))
 
-        rendered = pystache.render(template['qfmt'], fvcopy)
-
-        if sentinel not in rendered:
-          # when this field is missing, there is no meaningful content (no field values) in the question, so this field
-          # is required
-          required_fields.append(field_ord)
+      required_fields = [
+        field_ord for field_ord, field in enumerate(field_names)
+        # check if there are no other fields that have meaningful content
+        if not re.findall(f"(?!{field}{sentinel}\\b)\\b(\\w)*({sentinel})+", rendered)
+      ]
 
       if required_fields:
         req.append([template_ord, 'all', required_fields])
         continue
 
-      # there are no required fields, so an "all" is not appropriate, switch to checking for "any"
-      field_values = {field: '' for field in field_names}
-      for field_ord, field in enumerate(field_names):
-        fvcopy = copy(field_values)
-        fvcopy[field] = sentinel
-
-        rendered = pystache.render(template['qfmt'], fvcopy)
-
-        if sentinel in rendered:
-          # when this field is present, there is meaningful content in the question
-          required_fields.append(field_ord)
+      required_fields = [
+        field_ord for field_ord, field in enumerate(field_names)
+        # check if this field is present, so there is meaningful content
+        if f"{field}{sentinel}" in rendered
+      ]
 
       if not required_fields:
         raise Exception(
