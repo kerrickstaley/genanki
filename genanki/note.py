@@ -49,11 +49,12 @@ class _TagList(list):
 class Note:
   _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-z0-9]+(?: .*|/?)>)(?:.|\n)*?>')
 
-  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
+  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None, due=0):
     self.model = model
     self.fields = fields
     self.sort_field = sort_field
     self.tags = tags or []
+    self.due = due
     try:
       self.guid = guid
     except AttributeError:
@@ -165,7 +166,7 @@ class Note:
 
     note_id = cursor.lastrowid
     for card in self.cards:
-      card.write_to_db(cursor, timestamp, deck_id, note_id, id_gen)
+      card.write_to_db(cursor, timestamp, deck_id, note_id, id_gen, self.due)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)

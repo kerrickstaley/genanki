@@ -3,7 +3,7 @@ class Card:
     self.ord = ord
     self.suspend = suspend
 
-  def write_to_db(self, cursor, timestamp: float, deck_id, note_id, id_gen):
+  def write_to_db(self, cursor, timestamp: float, deck_id, note_id, id_gen, due=0):
     queue = -1 if self.suspend else 0
     cursor.execute('INSERT INTO cards VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);', (
         next(id_gen),    # id
@@ -14,7 +14,7 @@ class Card:
         -1,              # usn
         0,               # type (=0 for non-Cloze)
         queue,           # queue
-        0,               # due
+        due,             # due
         0,               # ivl
         0,               # factor
         0,               # reps
