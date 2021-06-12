@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overview &#8212; genanki 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to genanki’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p><cite>genanki</cite> allows you to programatically generate decks in Python 3 for Anki, a popular spaced-repetition flashcard
+program. Please see below for concepts and usage.</p>
+<p><em>This library and its author(s) are not affiliated/associated with the main Anki project in any way.</em></p>
+<p>[![CI](<a class="reference external" href="https://github.com/kerrickstaley/genanki/actions/workflows/ci.yml/badge.svg)](https://github.com/kerrickstaley/genanki/actions/workflows/ci.yml">https://github.com/kerrickstaley/genanki/actions/workflows/ci.yml/badge.svg)](https://github.com/kerrickstaley/genanki/actions/workflows/ci.yml</a>)</p>
+<p>## Notes
+The basic unit in Anki is the <cite>Note</cite>, which contains a fact to memorize. <a href="#id1"><span class="problematic" id="id2">`</span></a>Note`s correspond to one or more <a href="#id3"><span class="problematic" id="id4">`</span></a>Card`s.</p>
+<p>Here’s how you create a <cite>Note</cite>:</p>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a>python
+my_note = genanki.Note(</p>
+<blockquote>
+<div><p>model=my_model,
+fields=[‘Capital of Argentina’, ‘Buenos Aires’])</p>
+</div></blockquote>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
+<p>You pass in a <cite>Model</cite>, discussed below, and a set of <cite>fields</cite> (encoded as HTML).</p>
+<p>## Models
+A <cite>Model</cite> defines the fields and cards for a type of <cite>Note</cite>. For example:</p>
+<p><a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a>python
+my_model = genanki.Model(</p>
+<blockquote>
+<div><p>1607392319,
+‘Simple Model’,
+fields=[</p>
+<blockquote>
+<div><p>{‘name’: ‘Question’},
+{‘name’: ‘Answer’},</p>
+</div></blockquote>
+<p>],
+templates=[</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>‘name’: ‘Card 1’,
+‘qfmt’: ‘{{Question}}’,
+‘afmt’: ‘{{FrontSide}}&lt;hr id=”answer”&gt;{{Answer}}’,</p>
+</dd>
+</dl>
+<p>},</p>
+</div></blockquote>
+<p>])</p>
+</div></blockquote>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a></p>
+<p>This note-type has two fields and one card. The card displays the <cite>Question</cite> field on the front and the <cite>Question</cite> and
+<cite>Answer</cite> fields on the back, separated by a <cite>&lt;hr&gt;</cite>. You can also pass a <cite>css</cite> argument to <cite>Model()</cite> to supply custom
+CSS.</p>
+<p>You need to pass a <cite>model_id</cite> so that Anki can keep track of your model. It’s important that you use a unique <cite>model_id</cite>
+for each <cite>Model</cite> you define. Use <cite>import random; random.randrange(1 &lt;&lt; 30, 1 &lt;&lt; 31)</cite> to generate a suitable model_id, and hardcode it
+into your <cite>Model</cite> definition.</p>
+<p>## Generating a Deck/Package
+To import your notes into Anki, you need to add them to a <cite>Deck</cite>:</p>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a>python
+my_deck = genanki.Deck(</p>
+<blockquote>
+<div><p>2059400110,
+‘Country Capitals’)</p>
+</div></blockquote>
+<p>my_deck.add_note(my_note)
+<a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a></p>
+<p>Once again, you need a unique <cite>deck_id</cite> that you should generate once and then hardcode into your <cite>.py</cite> file.</p>
+<p>Then, create a <cite>Package</cite> for your <cite>Deck</cite> and write it to a file:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">genanki.Package(my_deck).write_to_file('output.apkg')</span>
+<span class="pre">`</span></code></p>
+<p>You can then load <cite>output.apkg</cite> into Anki using File -&gt; Import…</p>
+<p>## Media Files
+To add sounds or images, set the <cite>media_files</cite> attribute on your <cite>Package</cite>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">my_package</span> <span class="pre">=</span> <span class="pre">genanki.Package(my_deck)</span>
+<span class="pre">my_package.media_files</span> <span class="pre">=</span> <span class="pre">['sound.mp3',</span> <span class="pre">'images/image.jpg']</span>
+<span class="pre">`</span></code></p>
+<p><cite>media_files</cite> should have the path (relative or absolute) to each file. To use them in notes, first add a field to your model, and reference that field in your template:</p>
+<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a>python
+my_model = genanki.Model(</p>
+<blockquote>
+<div><p>1091735104,
+‘Simple Model with Media’,
+fields=[</p>
+<blockquote>
+<div><p>{‘name’: ‘Question’},
+{‘name’: ‘Answer’},
+{‘name’: ‘MyMedia’},                                  # ADD THIS</p>
+</div></blockquote>
+<p>],
+templates=[</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>‘name’: ‘Card 1’,
+‘qfmt’: ‘{{Question}}&lt;br&gt;{{MyMedia}}’,              # AND THIS
+‘afmt’: ‘{{FrontSide}}&lt;hr id=”answer”&gt;{{Answer}}’,</p>
+</dd>
+</dl>
+<p>},</p>
+</div></blockquote>
+<p>])</p>
+</div></blockquote>
+<p><a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a></p>
+<p>Then, set the <cite>MyMedia</cite> field on your card to <cite>[sound:sound.mp3]</cite> for audio and <cite>&lt;img src=”image.jpg”&gt;</cite> for images.</p>
+<p>You <em>cannot</em> put <cite>&lt;img src=”{MyMedia}”&gt;</cite> in the template and <cite>image.jpg</cite> in the field. See these sections in the Anki manual for more information: [Importing Media](<a class="reference external" href="https://docs.ankiweb.net/#/importing">https://docs.ankiweb.net/#/importing</a>?id=importing-media) and [Media &amp; LaTeX](<a class="reference external" href="https://docs.ankiweb.net/#/templates/fields">https://docs.ankiweb.net/#/templates/fields</a>?id=media-amp-latex).</p>
+<p>You should only put the filename (aka basename) and not the full path in the field; <cite>&lt;img src=”images/image.jpg”&gt;</cite> will <em>not</em> work. Media files should have unique filenames.</p>
+<p>## Note GUIDs
+<cite>Note`s have a `guid</cite> property that uniquely identifies the note. If you import a new note that has the same GUID as an
+existing note, the new note will overwrite the old one (as long as their models have the same fields).</p>
+<p>This is an important feature if you want to be able to tweak the design/content of your notes, regenerate your deck, and
+import the updated version into Anki. Your notes need to have stable GUIDs in order for the new note to replace the
+existing one.</p>
+<p>By default, the GUID is a hash of all the field values. This may not be desirable if, for example, you add a new field
+with additional info that doesn’t change the identity of the note. You can create a custom GUID implementation to hash
+only the fields that identify the note:</p>
+<p><a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a>python
+class MyNote(genanki.Note):</p>
+<blockquote>
+<div><p>&#64;property
+def guid(self):</p>
+<blockquote>
+<div><p>return genanki.guid_for(self.fields[0], self.fields[1])</p>
+</div></blockquote>
+</div></blockquote>
+<p><a href="#id41"><span class="problematic" id="id42">``</span></a><a href="#id43"><span class="problematic" id="id44">`</span></a></p>
+<p>## sort_field
+Anki has a value for each <cite>Note</cite> called the <cite>sort_field</cite>. Anki uses this value to sort the cards in the Browse
+interface. Anki also is happier if you avoid having two notes with the same <cite>sort_field</cite>, although this isn’t strictly
+necessary. By default, the <cite>sort_field</cite> is the first field, but you can change it by passing <cite>sort_field=</cite> to <cite>Note()</cite>
+or implementing <cite>sort_field</cite> as a property in a subclass (similar to <cite>guid</cite>).</p>
+<p>You can also pass <cite>sort_field_index=</cite> to <cite>Model()</cite> to change the sort field. <cite>0</cite> means the first field in the Note, <cite>1</cite> means the second, etc.</p>
+<p>## YAML for Templates (and Fields)
+You can create your template definitions in the YAML format and pass them as a <cite>str</cite> to <cite>Model()</cite>. You can also do this
+for fields.</p>
+<p>## Using genanki inside an Anki addon
+<cite>genanki</cite> supports adding generated notes to the local collection when running inside an Anki 2.1 addon (Anki 2.0
+may work but has not been tested). See the [<cite>.write_to_collection_from_addon() method</cite>](
+<a class="reference external" href="https://github.com/kerrickstaley/genanki/blob/0c2cf8fea9c5e382e2fae9cd6d5eb440e267c637/genanki/__init__.py#L275">https://github.com/kerrickstaley/genanki/blob/0c2cf8fea9c5e382e2fae9cd6d5eb440e267c637/genanki/__init__.py#L275</a>).</p>
+<p>## FAQ
+### My field data is getting garbled
+If fields in your notes contain literal <cite>&lt;</cite>, <cite>&gt;</cite>, or <cite>&amp;</cite> characters, you need to HTML-encode them: field data is HTML, not plain text. You can use the [<cite>html.escape</cite>](<a class="reference external" href="https://docs.python.org/3/library/html.html#html.escape">https://docs.python.org/3/library/html.html#html.escape</a>) function.</p>
+<p>For example, you should write
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">fields=['AT&amp;amp;T</span> <span class="pre">was</span> <span class="pre">originally</span> <span class="pre">called',</span> <span class="pre">'Bell</span> <span class="pre">Telephone</span> <span class="pre">Company']</span>
+<span class="pre">`</span></code>
+or
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">fields=[html.escape(f)</span> <span class="pre">for</span> <span class="pre">f</span> <span class="pre">in</span> <span class="pre">['AT&amp;T</span> <span class="pre">was</span> <span class="pre">originally</span> <span class="pre">called',</span> <span class="pre">'Bell</span> <span class="pre">Telephone</span> <span class="pre">Company']]</span>
+<span class="pre">`</span></code></p>
+<p>This applies even if the content is LaTeX; for example, you should write
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">fields=['Piketty</span> <span class="pre">calls</span> <span class="pre">this</span> <span class="pre">the</span> <span class="pre">&quot;central</span> <span class="pre">contradiction</span> <span class="pre">of</span> <span class="pre">capitalism&quot;.',</span> <span class="pre">'[latex]r</span> <span class="pre">&amp;gt;</span> <span class="pre">g[/latex]']</span>
+<span class="pre">`</span></code></p>
+<p>## Publishing to PyPI
+If your name is Kerrick, you can publish the <cite>genanki</cite> package to PyPI by running these commands from the root of the <cite>genanki</cite> repo:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">rm</span> <span class="pre">-rf</span> <span class="pre">dist/*</span>
+<span class="pre">python3</span> <span class="pre">setup.py</span> <span class="pre">sdist</span> <span class="pre">bdist_wheel</span>
+<span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">twine</span> <span class="pre">upload</span> <span class="pre">dist/*</span>
+<span class="pre">`</span></code>
+Note that this directly uploads to prod PyPI and skips uploading to test PyPI.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">genanki</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to genanki’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Kerrick Staley.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/overview.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
