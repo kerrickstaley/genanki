@@ -6,6 +6,11 @@
 Welcome to genanki's documentation!
 ===================================
 
+`genanki` allows you to programatically generate decks in Python 3 for Anki, a popular spaced-repetition flashcard
+program. Please see below for concepts and usage.
+
+*This library and its author(s) are not affiliated/associated with the main Anki project in any way.*
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
