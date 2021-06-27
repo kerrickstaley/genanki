@@ -65,6 +65,59 @@ TEST_MODEL_WITH_HINT = genanki.Model(
   ],
 )
 
+# Same as default latex_pre but we include amsfonts package
+CUSTOM_LATEX_PRE = ('\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n'
+                    + '\\usepackage{amssymb,amsmath,amsfonts}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n'
+                    + '\\begin{document}\n')
+# Same as default latex_post but we add a comment. (What is a real-world use-case for customizing latex_post?)
+CUSTOM_LATEX_POST = '% here is a great comment\n\\end{document}'
+
+TEST_MODEL_WITH_LATEX = genanki.Model(
+  567890, 'with latex',
+  fields=[
+    {
+      'name': 'AField',
+    },
+    {
+      'name': 'BField',
+    },
+  ],
+  templates=[
+    {
+      'name': 'card1',
+      'qfmt': '{{AField}}',
+      'afmt': '{{FrontSide}}'
+              '<hr id="answer">'
+              '{{BField}}',
+    }
+  ],
+  latex_pre=CUSTOM_LATEX_PRE,
+  latex_post=CUSTOM_LATEX_POST,
+)
+
+CUSTOM_SORT_FIELD_INDEX = 1  # Anki default value is 0
+TEST_MODEL_WITH_SORT_FIELD_INDEX = genanki.Model(
+  987123, 'with sort field index',
+  fields=[
+    {
+      'name': 'AField',
+    },
+    {
+      'name': 'BField',
+    },
+  ],
+  templates=[
+    {
+      'name': 'card1',
+      'qfmt': '{{AField}}',
+      'afmt': '{{FrontSide}}'
+              '<hr id="answer">'
+              '{{BField}}',
+    }
+  ],
+  sort_field_index=CUSTOM_SORT_FIELD_INDEX,
+)
+
 # VALID_MP3 and VALID_JPG courtesy of https://github.com/mathiasbynens/small
 VALID_MP3 = (
   b'\xff\xe3\x18\xc4\x00\x00\x00\x03H\x00\x00\x00\x00LAME3.98.2\x00\x00\x00'
@@ -89,7 +142,7 @@ class TestWithCollection:
     colf.close()  # colf is deleted
     self.col = anki.Collection(colf_name)
 
-  def import_package(self, pkg):
+  def import_package(self, pkg, timestamp=None):
     """
     Imports `pkg` into self.col.
 
@@ -98,7 +151,7 @@ class TestWithCollection:
     outf = tempfile.NamedTemporaryFile(suffix='.apkg', delete=False)
     outf.close()
 
-    pkg.write_to_file(outf.name)
+    pkg.write_to_file(outf.name, timestamp=timestamp)
 
     importer = anki.importing.apkg.AnkiPackageImporter(self.col, outf.name)
     importer.run()
@@ -289,7 +342,7 @@ class TestWithCollection:
 
     deck.add_note(note)
 
-    self.import_package(genanki.Package(deck))
+    self.import_package(genanki.Package(deck), timestamp=0)
 
     assert self.col.findCards('') == [1, 2]
     assert self.col.findCards('is:suspended') == [2]
@@ -306,6 +359,94 @@ class TestWithCollection:
     imported_deck = all_decks[1]
 
     assert imported_deck['desc'] == 'This is my great deck.\nIt is so so great.'
+
+  def test_card_added_date_is_recent(self):
+    """
+    Checks for a bug where cards were assigned the creation date 1970-01-01 (i.e. the Unix epoch).
+
+    See https://github.com/kerrickstaley/genanki/issues/29 .
+
+    The "Added" date is encoded in the card.id field; see
+    https://github.com/ankitects/anki/blob/ed8340a4e3a2006d6285d7adf9b136c735ba2085/anki/stats.py#L28
+
+    TODO implement a fix so that this test passes.
+    """
+    deck = genanki.Deck(1104693946, 'foodeck')
+    note = genanki.Note(TEST_MODEL, ['a', 'b'])
+    deck.add_note(note)
+
+    self.import_package(genanki.Package(deck))
+
+    anki_note = self.col.getNote(self.col.findNotes('')[0])
+    anki_card = anki_note.cards()[0]
+
+    assert anki_card.id > 1577836800000  # Jan 1 2020 UTC (milliseconds since epoch)
+
+  def test_model_with_latex_pre_and_post(self):
+    deck = genanki.Deck(1681249286, 'foodeck')
+    note = genanki.Note(TEST_MODEL_WITH_LATEX, ['a', 'b'])
+    deck.add_note(note)
+
+    self.import_package(genanki.Package(deck))
+
+    anki_note = self.col.getNote(self.col.findNotes('')[0])
+    assert anki_note.model()['latexPre'] == CUSTOM_LATEX_PRE
+    assert anki_note.model()['latexPost'] == CUSTOM_LATEX_POST
+
+  def test_model_with_sort_field_index(self):
+      deck = genanki.Deck(332211, 'foodeck')
+      note = genanki.Note(TEST_MODEL_WITH_SORT_FIELD_INDEX, ['a', '3.A'])
+      deck.add_note(note)
+
+      self.import_package(genanki.Package(deck))
+
+      anki_note = self.col.getNote(self.col.findNotes('')[0])
+      assert anki_note.model()['sortf'] == CUSTOM_SORT_FIELD_INDEX
+
+  def test_notes_with_due1(self):
+    deck = genanki.Deck(4145273926, 'foodeck')
+    deck.add_note(genanki.Note(
+      TEST_MODEL,
+      ['Capital of Washington', 'Olympia'],
+      due=1))
+    deck.add_note(genanki.Note(
+      TEST_MODEL,
+      ['Capital of Oregon', 'Salem'],
+      due=2))
+
+    self.import_package(genanki.Package(deck))
+
+    self.col.decks.select(self.col.decks.id('foodeck'))
+    self.col.sched.reset()
+    next_card = self.col.sched.getCard()
+    next_note = self.col.getNote(next_card.nid)
+
+    # Next card is the one with lowest due value.
+    assert next_note.fields == ['Capital of Washington', 'Olympia']
+
+  def test_notes_with_due2(self):
+    # Same as test_notes_with_due1, but we switch the due values
+    # for the two notes.
+    deck = genanki.Deck(4145273927, 'foodeck')
+    deck.add_note(genanki.Note(
+      TEST_MODEL,
+      ['Capital of Washington', 'Olympia'],
+      due=2))
+    deck.add_note(genanki.Note(
+      TEST_MODEL,
+      ['Capital of Oregon', 'Salem'],
+      due=1))
+
+    self.import_package(genanki.Package(deck))
+
+    self.col.decks.select(self.col.decks.id('foodeck'))
+    self.col.sched.reset()
+    next_card = self.col.sched.getCard()
+    next_note = self.col.getNote(next_card.nid)
+
+    # Next card changes to "Capital of Oregon", because it has lower
+    # due value.
+    assert next_note.fields == ['Capital of Oregon', 'Salem']
 
   def test_deck_with_config(self):
     conf = genanki.DeckConf(666, 'MyConf')

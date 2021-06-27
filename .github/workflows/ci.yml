@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        python-version: [3.6, 3.8, 3.9]
+        anki-version: [ed8340a4e3a2006d6285d7adf9b136c735ba2085]
+        exclude:
+          # compatible pyaudio not available
+          - os: windows
+            python-version: 3.8
+          - os: windows
+            python-version: 3.9
+    steps:
+      - uses: actions/checkout@v2
+      - if: ${{ matrix.os == 'ubuntu' }}
+        run: sudo apt-get install portaudio19-dev python3-dev
+      - if: ${{ matrix.os == 'macos' }}
+        run: brew install portaudio
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python3 -m pip install --upgrade pip wheel setuptools
+      - if: ${{ matrix.os == 'windows' }}
+        run: python3 -m pip install pywin32
+      - name: install package and tests_require from setup.py
+        run: python3 -m pip install -e ".[test]" pytest-cov codecov
+      - run: |
+          git clone https://github.com/ankitects/anki.git anki_upstream
+          cd anki_upstream
+          git reset --hard ${{ matrix.anki-version }}
+          python3 -m pip install -r requirements.txt
+      - run: |
+          python3 -m pytest tests -vv --cov genanki --cov-report term-missing:skip-covered --no-cov-on-fail
+      - run: codecov

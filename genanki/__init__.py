@@ -9,3 +9,9 @@ from .package import Package
 from .deck_conf import DeckConf
 
 from .util import guid_for
+
+from .builtin_models import BASIC_MODEL
+from .builtin_models import BASIC_AND_REVERSED_CARD_MODEL
+from .builtin_models import BASIC_OPTIONAL_REVERSED_CARD_MODEL
+from .builtin_models import BASIC_TYPE_IN_THE_ANSWER_MODEL
+from .builtin_models import CLOZE_MODEL

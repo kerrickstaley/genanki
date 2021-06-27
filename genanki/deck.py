@@ -46,7 +46,7 @@ class Deck:
       "usn": -1
     }
 
-  def write_to_db(self, cursor, now_ts):
+  def write_to_db(self, cursor, timestamp: float, id_gen):
     if not isinstance(self.deck_id, int):
       raise TypeError('Deck .deck_id must be an integer, not {}.'.format(self.deck_id))
     if not isinstance(self.name, str):
@@ -65,11 +65,11 @@ class Deck:
     for note in self.notes:
       self.add_model(note.model)
     models.update(
-      {model.model_id: model.to_json(now_ts, self.deck_id) for model in self.models.values()})
+      {model.model_id: model.to_json(timestamp, self.deck_id) for model in self.models.values()})
     cursor.execute('UPDATE col SET models = ?', (json.dumps(models),))
 
     for note in self.notes:
-      note.write_to_db(cursor, now_ts, self.deck_id)
+      note.write_to_db(cursor, timestamp, self.deck_id, id_gen)
 
   def write_to_file(self, file):
     """

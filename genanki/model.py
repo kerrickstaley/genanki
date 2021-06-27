@@ -7,14 +7,22 @@ class Model:
 
   FRONT_BACK = 0
   CLOZE = 1
+  DEFAULT_LATEX_PRE = ('\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n'
+                       + '\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n'
+                       + '\\begin{document}\n')
+  DEFAULT_LATEX_POST = '\\end{document}'
 
-  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', model_type=FRONT_BACK):
+  def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', model_type=FRONT_BACK,
+               latex_pre=DEFAULT_LATEX_PRE, latex_post=DEFAULT_LATEX_POST, sort_field_index=0):
     self.model_id = model_id
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
     self.css = css
     self.model_type = model_type
+    self.latex_pre = latex_pre
+    self.latex_post = latex_post
+    self.sort_field_index = sort_field_index
 
   def set_fields(self, fields):
     if isinstance(fields, list):
@@ -82,11 +90,13 @@ class Model:
 
     return req
 
-  def to_json(self, now_ts, deck_id):
+  def to_json(self, timestamp: float, deck_id):
     for ord_, tmpl in enumerate(self.templates):
       tmpl['ord'] = ord_
       tmpl.setdefault('bafmt', '')
       tmpl.setdefault('bqfmt', '')
+      tmpl.setdefault('bfont', '')
+      tmpl.setdefault('bsize', 0)
       tmpl.setdefault('did', None)  # TODO None works just fine here, but should it be deck_id?
 
     for ord_, field in enumerate(self.fields):
@@ -102,16 +112,21 @@ class Model:
       "did": deck_id,
       "flds": self.fields,
       "id": str(self.model_id),
-      "latexPost": "\\end{document}",
-      "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage{amssymb,amsmath}\n"
-                  "\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
-      "mod": now_ts,
+      "latexPost": self.latex_post,
+      "latexPre": self.latex_pre,
+      "latexsvg": False,
+      "mod": int(timestamp),
       "name": self.name,
       "req": self._req,
-      "sortf": 0,
+      "sortf": self.sort_field_index,
       "tags": [],
       "tmpls": self.templates,
       "type": self.model_type,
       "usn": -1,
       "vers": []
     }
+
+  def __repr__(self):
+    attrs = ['model_id', 'name', 'fields', 'templates', 'css', 'model_type']
+    pieces = ['{}={}'.format(attr, repr(getattr(self, attr))) for attr in attrs]
+    return '{}({})'.format(self.__class__.__name__, ', '.join(pieces))

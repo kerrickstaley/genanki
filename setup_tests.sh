@@ -1,7 +1,7 @@
 #!/bin/bash
 # TODO make this cleaner / platform-independent
 set -e
-anki_test_revision=a98c20a22f3d6e5eb6039bb3e06288dc23c3dec4
+anki_test_revision=ed8340a4e3a2006d6285d7adf9b136c735ba2085
 
 # install pyaudio system deps
 sudo apt-get -y update && sudo apt-get install -y python-all-dev portaudio19-dev \
@@ -16,7 +16,7 @@ fi
 
 # clone Anki upstream at specific revision, install dependencies
 rm -rf anki_upstream
-git clone https://github.com/dae/anki.git anki_upstream
+git clone https://github.com/ankitects/anki.git anki_upstream
 ( cd anki_upstream
   git reset --hard $anki_test_revision
   pip install -r requirements.txt

@@ -1,4 +1,5 @@
 import re
+import warnings
 from cached_property import cached_property
 
 from .card import Card
@@ -46,11 +47,14 @@ class _TagList(list):
 
 
 class Note:
-  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None):
+  _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-z0-9]+(?: .*|/?)>)(?:.|\n)*?>')
+
+  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None, due=0):
     self.model = model
     self.fields = fields
     self.sort_field = sort_field
     self.tags = tags or []
+    self.due = due
     try:
       self.guid = guid
     except AttributeError:
@@ -59,7 +63,7 @@ class Note:
 
   @property
   def sort_field(self):
-    return self._sort_field or self.fields[0]
+    return self._sort_field or self.fields[self.model.sort_field_index]
 
   @sort_field.setter
   def sort_field(self, val):
@@ -95,7 +99,7 @@ class Note:
       field_index = next((i for i, f in enumerate(self.model.fields) if f['name'] == field_name), -1)
       field_value = self.fields[field_index] if field_index >= 0 else ""
       # update card_ords with each cloze reference N, e.g. "{{cN::...}}"
-      card_ords.update(int(m)-1 for m in re.findall(r"{{c(\d+)::.+?}}", field_value) if int(m) > 0)
+      card_ords.update(int(m)-1 for m in re.findall(r"{{c(\d+)::.+?}}", field_value, re.DOTALL) if int(m) > 0)
     if card_ords == {}:
       card_ords = {0}
     return([Card(ord) for ord in card_ords])
@@ -119,11 +123,38 @@ class Note:
   def guid(self, val):
     self._guid = val
 
-  def write_to_db(self, cursor, now_ts, deck_id):
-    cursor.execute('INSERT INTO notes VALUES(null,?,?,?,?,?,?,?,?,?,?);', (
+  def _check_number_model_fields_matches_num_fields(self):
+    if len(self.model.fields) != len(self.fields):
+      raise ValueError(
+          'Number of fields in Model does not match number of fields in Note: '
+          '{} has {} fields, but {} has {} fields.'.format(
+              self.model, len(self.model.fields), self, len(self.fields)))
+
+  @classmethod
+  def _find_invalid_html_tags_in_field(cls, field):
+    return cls._INVALID_HTML_TAG_RE.findall(field)
+
+  def _check_invalid_html_tags_in_fields(self):
+    for idx, field in enumerate(self.fields):
+      invalid_tags = self._find_invalid_html_tags_in_field(field)
+      if invalid_tags:
+        # You can disable the below warning by calling warnings.filterwarnings:
+        #
+        # warnings.filterwarnings('ignore', module='genanki', message='^Field contained the following invalid HTML tags')
+        #
+        # If you think you're getting a false positive for this warning, please file an issue at
+        # https://github.com/kerrickstaley/genanki/issues
+        warnings.warn("Field contained the following invalid HTML tags. Make sure you are calling html.escape() if"
+                      " your field data isn't already HTML-encoded: {}".format(' '.join(invalid_tags)))
+
+  def write_to_db(self, cursor, timestamp: float, deck_id, id_gen):
+    self._check_number_model_fields_matches_num_fields()
+    self._check_invalid_html_tags_in_fields()
+    cursor.execute('INSERT INTO notes VALUES(?,?,?,?,?,?,?,?,?,?,?);', (
+        next(id_gen),                 # id
         self.guid,                    # guid
         self.model.model_id,          # mid
-        now_ts,                       # mod
+        int(timestamp),               # mod
         -1,                           # usn
         self._format_tags(),          # TODO tags
         self._format_fields(),        # flds
@@ -135,10 +166,15 @@ class Note:
 
     note_id = cursor.lastrowid
     for card in self.cards:
-      card.write_to_db(cursor, now_ts, deck_id, note_id)
+      card.write_to_db(cursor, timestamp, deck_id, note_id, id_gen, self.due)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)
 
   def _format_tags(self):
     return ' ' + ' '.join(self.tags) + ' '
+
+  def __repr__(self):
+    attrs = ['model', 'fields', 'sort_field', 'tags', 'guid']
+    pieces = ['{}={}'.format(attr, repr(getattr(self, attr))) for attr in attrs]
+    return '{}({})'.format(self.__class__.__name__, ', '.join(pieces))
