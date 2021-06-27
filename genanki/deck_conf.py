@@ -61,9 +61,8 @@ class DeckConf:
   def to_json(self):
     return self.conf
 
-  def write_to_db(self, cursor, now_ts):
+  def write_to_db(self, cursor, timestamp):
     conf_json_str, = cursor.execute('SELECT dconf FROM col').fetchone()
     confs = json.loads(conf_json_str)
     confs.update({str(self.deck_conf_id): self.to_json()})
     cursor.execute('UPDATE col SET dconf = ?', (json.dumps(confs),))
-
