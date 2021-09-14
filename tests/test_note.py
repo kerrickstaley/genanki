@@ -172,6 +172,9 @@ class TestFindInvalidHtmlTagsInField:
 
   def test_ok_attrs(self):
     assert genanki.Note._find_invalid_html_tags_in_field('<h1 style="color: red">STOP</h1>') == []
+    
+  def test_ok_uppercase(self):
+    assert genanki.Note._find_invalid_html_tags_in_field('<TD></Td>') == []
 
   def test_ng_empty(self):
     assert genanki.Note._find_invalid_html_tags_in_field(' hello <> goodbye') == ['<>']
