@@ -52,13 +52,12 @@ class Model:
 
     req = []
     for template_ord, template in enumerate(self.templates):
-      field_values = {field: sentinel for field in field_names}
       required_fields = []
       for field_ord, field in enumerate(field_names):
-        fvcopy = copy(field_values)
-        fvcopy[field] = ''
+        field_values = {field: sentinel for field in field_names}
+        field_values[field] = ''
 
-        rendered = pystache.render(template['qfmt'], fvcopy)
+        rendered = pystache.render(template['qfmt'], field_values)
 
         if sentinel not in rendered:
           # when this field is missing, there is no meaningful content (no field values) in the question, so this field
@@ -70,12 +69,11 @@ class Model:
         continue
 
       # there are no required fields, so an "all" is not appropriate, switch to checking for "any"
-      field_values = {field: '' for field in field_names}
       for field_ord, field in enumerate(field_names):
-        fvcopy = copy(field_values)
-        fvcopy[field] = sentinel
+        field_values = {field: '' for field in field_names}
+        field_values[field] = sentinel
 
-        rendered = pystache.render(template['qfmt'], fvcopy)
+        rendered = pystache.render(template['qfmt'], field_values)
 
         if sentinel in rendered:
           # when this field is present, there is meaningful content in the question
