@@ -1,6 +1,6 @@
 from copy import copy
 from cached_property import cached_property
-import pystache
+import chevron
 import yaml
 
 class Model:
@@ -41,7 +41,7 @@ class Model:
     """
     List of required fields for each template. Format is [tmpl_idx, "all"|"any", [req_field_1, req_field_2, ...]].
 
-    Partial reimplementation of req computing logic from Anki. We use pystache instead of Anki's custom mustache
+    Partial reimplementation of req computing logic from Anki. We use chevron instead of Anki's custom mustache
     implementation.
 
     The goal is to figure out which fields are "required", i.e. if they are missing then the front side of the note
@@ -57,7 +57,7 @@ class Model:
         field_values = {field: sentinel for field in field_names}
         field_values[field] = ''
 
-        rendered = pystache.render(template['qfmt'], field_values)
+        rendered = chevron.render(template['qfmt'], field_values)
 
         if sentinel not in rendered:
           # when this field is missing, there is no meaningful content (no field values) in the question, so this field
@@ -73,7 +73,7 @@ class Model:
         field_values = {field: '' for field in field_names}
         field_values[field] = sentinel
 
-        rendered = pystache.render(template['qfmt'], field_values)
+        rendered = chevron.render(template['qfmt'], field_values)
 
         if sentinel in rendered:
           # when this field is present, there is meaningful content in the question

@@ -18,7 +18,7 @@ setup(name='genanki',
       install_requires=[
         'cached-property',
         'frozendict',
-        'pystache',
+        'chevron',
         'pyyaml',
       ],
       setup_requires=[
