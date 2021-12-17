@@ -1,8 +1,9 @@
 import json
+import random
 
 class Deck:
   def __init__(self, deck_id=None, name=None, description=''):
-    self.deck_id = deck_id
+    self.deck_id = deck_id if deck_id else random.randrange(1 << 30, 1 << 31)
     self.name = name
     self.description = description
     self.notes = []

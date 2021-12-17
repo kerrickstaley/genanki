@@ -2,6 +2,7 @@ from copy import copy
 from cached_property import cached_property
 import chevron
 import yaml
+import random
 
 class Model:
 
@@ -14,7 +15,7 @@ class Model:
 
   def __init__(self, model_id=None, name=None, fields=None, templates=None, css='', model_type=FRONT_BACK,
                latex_pre=DEFAULT_LATEX_PRE, latex_post=DEFAULT_LATEX_POST, sort_field_index=0):
-    self.model_id = model_id
+    self.model_id = model_id if model_id else random.randrange(1 << 30, 1 << 31)
     self.name = name
     self.set_fields(fields)
     self.set_templates(templates)
