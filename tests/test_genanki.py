@@ -281,7 +281,8 @@ class TestWithCollection:
     with open('present.jpg', 'wb') as h:
       h.write(VALID_JPG)
 
-    self.import_package(genanki.Package(deck, media_files=['present.mp3', 'present.jpg']))
+    package = genanki.Package(deck, media_files=['present.mp3', 'present.jpg'])
+    self.import_package(package)
 
     os.remove('present.mp3')
     os.remove('present.jpg')
@@ -307,7 +308,8 @@ class TestWithCollection:
     with open('subdir2/present.jpg', 'wb') as h:
       h.write(VALID_JPG)
 
-    self.import_package(genanki.Package(deck, media_files=['subdir1/present.mp3', 'subdir2/present.jpg']))
+    package = genanki.Package(deck, media_files=['subdir1/present.mp3', 'subdir2/present.jpg'])
+    self.import_package(package)
 
     os.remove('subdir1/present.mp3')
     os.remove('subdir2/present.jpg')
@@ -334,7 +336,8 @@ class TestWithCollection:
     with open(present_jpg_path, 'wb') as h:
       h.write(VALID_JPG)
 
-    self.import_package(genanki.Package(deck, media_files=[present_mp3_path, present_jpg_path]))
+    package = genanki.Package(deck, media_files=[present_mp3_path, present_jpg_path])
+    self.import_package(package)
 
     missing, unused, invalid = self.check_media()
     assert set(missing) == {'missing.mp3', 'missing.jpg'}
