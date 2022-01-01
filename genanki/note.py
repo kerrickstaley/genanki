@@ -2,6 +2,7 @@ import re
 import warnings
 from cached_property import cached_property
 
+from .builtin_models import _warn_for_deprecated_builtin_model
 from .card import Card
 from .util import guid_for
 
@@ -60,6 +61,15 @@ class Note:
     except AttributeError:
       # guid was defined as a property
       pass
+
+  @property
+  def model(self):
+    return self._model
+
+  @model.setter
+  def model(self, val):
+    _warn_for_deprecated_builtin_model(val)
+    self._model = val
 
   @property
   def sort_field(self):

@@ -10,6 +10,8 @@ Note: Anki does not assign consistent IDs to its built-in models (see
     etc., which is less confusing.
 """
 
+import warnings
+
 from .model import Model
 
 
@@ -119,7 +121,7 @@ BASIC_TYPE_IN_THE_ANSWER_MODEL = Model(
   css='.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n',
 )
 
-_CLOZE_MODEL_WITHOUT_EXTRA = Model(
+_CLOZE_WITHOUT_EXTRA_MODEL = Model(
   1122529321,
   'Cloze (genanki)',
   model_type=Model.CLOZE,
@@ -140,7 +142,7 @@ _CLOZE_MODEL_WITHOUT_EXTRA = Model(
       '.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}',
 )
 
-CLOZE_MODEL_WITH_EXTRA = Model(
+CLOZE_WITH_EXTRA_MODEL = Model(
   1550428389,
   'Cloze (genanki)',
   model_type=Model.CLOZE,
@@ -165,4 +167,8 @@ CLOZE_MODEL_WITH_EXTRA = Model(
       '.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}',
 )
 
-CLOZE_MODEL = _CLOZE_MODEL_WITHOUT_EXTRA
+CLOZE_MODEL = _CLOZE_WITHOUT_EXTRA_MODEL
+
+def _warn_for_deprecated_builtin_model(model):
+  if model is _CLOZE_WITHOUT_EXTRA_MODEL:
+    warnings.warn('CLOZE_MODEL is deprecated; please use CLOZE_MODEL_WITH_EXTRA', DeprecationWarning)
