@@ -121,28 +121,7 @@ BASIC_TYPE_IN_THE_ANSWER_MODEL = Model(
   css='.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n',
 )
 
-_CLOZE_WITHOUT_EXTRA_MODEL = Model(
-  1122529321,
-  'Cloze (genanki)',
-  model_type=Model.CLOZE,
-  fields=[
-    {
-      'name': 'Text',
-      'font': 'Arial',
-    },
-  ],
-  templates=[
-    {
-      'name': 'Cloze',
-      'qfmt': '{{cloze:Text}}',
-      'afmt': '{{cloze:Text}}',
-    },
-  ],
-  css='.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n\n'
-      '.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}',
-)
-
-CLOZE_WITH_EXTRA_MODEL = Model(
+CLOZE_MODEL = Model(
   1550428389,
   'Cloze (genanki)',
   model_type=Model.CLOZE,
@@ -166,12 +145,6 @@ CLOZE_WITH_EXTRA_MODEL = Model(
   css='.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n\n'
       '.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}',
 )
-
-CLOZE_MODEL = CLOZE_WITH_EXTRA_MODEL
-
-def _warn_for_deprecated_builtin_model(model):
-  if model is _CLOZE_WITHOUT_EXTRA_MODEL:
-    warnings.warn('CLOZE_MODEL is deprecated; please use CLOZE_MODEL_WITH_EXTRA', DeprecationWarning)
 
 def _fix_deprecated_builtin_models_and_warn(model, fields):
   if model is CLOZE_MODEL and len(fields) == 1:
