@@ -167,8 +167,19 @@ CLOZE_WITH_EXTRA_MODEL = Model(
       '.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}',
 )
 
-CLOZE_MODEL = _CLOZE_WITHOUT_EXTRA_MODEL
+CLOZE_MODEL = CLOZE_WITH_EXTRA_MODEL
 
 def _warn_for_deprecated_builtin_model(model):
   if model is _CLOZE_WITHOUT_EXTRA_MODEL:
     warnings.warn('CLOZE_MODEL is deprecated; please use CLOZE_MODEL_WITH_EXTRA', DeprecationWarning)
+
+def _fix_deprecated_builtin_models_and_warn(model, fields):
+  if model is CLOZE_MODEL and len(fields) == 1:
+    fixed_fields = fields + ['']
+    warnings.warn(
+      'Using CLOZE_MODEL with a single field is deprecated and will not work in the future.'
+      + ' Please pass two fields, e.g. {} .'.format(repr(fixed_fields))
+      + ' See TODO insert link', DeprecationWarning)
+    return fixed_fields
+
+  return fields
