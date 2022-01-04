@@ -2,6 +2,7 @@ import re
 import warnings
 from cached_property import cached_property
 
+from .builtin_models import _fix_deprecated_builtin_models_and_warn
 from .card import Card
 from .util import guid_for
 
@@ -148,6 +149,7 @@ class Note:
                       " your field data isn't already HTML-encoded: {}".format(' '.join(invalid_tags)))
 
   def write_to_db(self, cursor, timestamp: float, deck_id, id_gen):
+    self.fields = _fix_deprecated_builtin_models_and_warn(self.model, self.fields)
     self._check_number_model_fields_matches_num_fields()
     self._check_invalid_html_tags_in_fields()
     cursor.execute('INSERT INTO notes VALUES(?,?,?,?,?,?,?,?,?,?,?);', (

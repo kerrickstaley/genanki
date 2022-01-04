@@ -10,6 +10,8 @@ Note: Anki does not assign consistent IDs to its built-in models (see
     etc., which is less confusing.
 """
 
+import warnings
+
 from .model import Model
 
 
@@ -120,7 +122,7 @@ BASIC_TYPE_IN_THE_ANSWER_MODEL = Model(
 )
 
 CLOZE_MODEL = Model(
-  1122529321,
+  1550428389,
   'Cloze (genanki)',
   model_type=Model.CLOZE,
   fields=[
@@ -128,14 +130,30 @@ CLOZE_MODEL = Model(
       'name': 'Text',
       'font': 'Arial',
     },
+    {
+      'name': 'Back Extra',
+      'font': 'Arial',
+    },
   ],
   templates=[
     {
       'name': 'Cloze',
       'qfmt': '{{cloze:Text}}',
-      'afmt': '{{cloze:Text}}',
+      'afmt': '{{cloze:Text}}<br>\n{{Back Extra}}',
     },
   ],
   css='.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n\n'
       '.cloze {\n font-weight: bold;\n color: blue;\n}\n.nightMode .cloze {\n color: lightblue;\n}',
 )
+
+def _fix_deprecated_builtin_models_and_warn(model, fields):
+  if model is CLOZE_MODEL and len(fields) == 1:
+    fixed_fields = fields + ['']
+    warnings.warn(
+      'Using CLOZE_MODEL with a single field is deprecated.'
+      + ' Please pass two fields, e.g. {} .'.format(repr(fixed_fields))
+      + ' See https://github.com/kerrickstaley/genanki#cloze_model-deprecationwarning .',
+      DeprecationWarning)
+    return fixed_fields
+
+  return fields
