@@ -139,6 +139,15 @@ for fields.
 may work but has not been tested). See the [`.write_to_collection_from_addon() method`](
 https://github.com/kerrickstaley/genanki/blob/0c2cf8fea9c5e382e2fae9cd6d5eb440e267c637/genanki/__init__.py#L275).
 
+## CLOZE_MODEL DeprecationWarning
+Due to a mistake, in genanki versions before 0.13.0, `builtin_models.CLOZE_MODEL` only had a single field, whereas the real Cloze model that is built into Anki has two fields. If you get a `DeprecationWarning` when using `CLOZE_MODEL`, simply add another field (it can be an empty string) when creating your `Note`, e.g.
+
+```python
+my_note = genanki.Note(
+  model=genanki.CLOZE_MODEL,
+  fields=['{{c1::Rome}} is the capital of {{c2::Italy}}', ''])
+```
+
 ## FAQ
 ### My field data is getting garbled
 If fields in your notes contain literal `<`, `>`, or `&` characters, you need to HTML-encode them: field data is HTML, not plain text. You can use the [`html.escape`](https://docs.python.org/3/library/html.html#html.escape) function.

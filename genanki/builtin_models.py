@@ -150,7 +150,7 @@ def _fix_deprecated_builtin_models_and_warn(model, fields):
   if model is CLOZE_MODEL and len(fields) == 1:
     fixed_fields = fields + ['']
     warnings.warn(
-      'Using CLOZE_MODEL with a single field is deprecated and will not work in the future.'
+      'Using CLOZE_MODEL with a single field is deprecated and may not work in the future.'
       + ' Please pass two fields, e.g. {} .'.format(repr(fixed_fields))
       + ' See TODO insert link', DeprecationWarning)
     return fixed_fields
