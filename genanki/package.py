@@ -13,13 +13,15 @@ from .deck import Deck
 from typing import Optional
 
 class Package:
-  def __init__(self, deck_or_decks=None, media_files=None):
+  def __init__(self, deck_or_decks=None, media_files=None, media_function=None):
     if isinstance(deck_or_decks, Deck):
       self.decks = [deck_or_decks]
     else:
       self.decks = deck_or_decks
 
     self.media_files = media_files or []
+    self.media_function = media_function
+
 
   def write_to_file(self, file, timestamp: Optional[float] = None):
     """
@@ -27,30 +29,28 @@ class Package:
     :param timestamp: Timestamp (float seconds since Unix epoch) to assign to generated notes/cards. Can be used to
         make build hermetic. Defaults to time.time().
     """
-    dbfile, dbfilename = tempfile.mkstemp()
-    os.close(dbfile)
-
-    conn = sqlite3.connect(dbfilename)
-    cursor = conn.cursor()
-
-    if timestamp is None:
-      timestamp = time.time()
-
-    id_gen = itertools.count(int(timestamp * 1000))
-    self.write_to_db(cursor, timestamp, id_gen)
-
-    conn.commit()
-    conn.close()
+    dbfilename = tempfile.NamedTemporaryFile()
+    
+    with sqlite3.connect(dbfilename.name) as conn:
+      cursor = conn.cursor()
+      if timestamp is None: timestamp = time.time()
+      id_gen = itertools.count(int(timestamp * 1000))
+      self.write_to_db(cursor, timestamp, id_gen)
 
     with zipfile.ZipFile(file, 'w') as outzip:
-      outzip.write(dbfilename, 'collection.anki2')
+      outzip.write(dbfilename.name, 'collection.anki2')
 
       media_file_idx_to_path = dict(enumerate(self.media_files))
       media_json = {idx: os.path.basename(path) for idx, path in media_file_idx_to_path.items()}
       outzip.writestr('media', json.dumps(media_json))
 
       for idx, path in media_file_idx_to_path.items():
-        outzip.write(path, str(idx))
+        if callable(self.media_function):
+          self.media_function(outzip, idx, path)
+        else:
+          outzip.write(path, str(idx))
+        
+    dbfilename.close()
 
   def write_to_db(self, cursor, timestamp: float, id_gen):
     cursor.executescript(APKG_SCHEMA)
