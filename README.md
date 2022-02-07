@@ -103,6 +103,20 @@ You *cannot* put `<img src="{MyMedia}">` in the template and `image.jpg` in the 
 
 You should only put the filename (aka basename) and not the full path in the field; `<img src="images/image.jpg">` will *not* work. Media files should have unique filenames.
 
+  ### Custom Media functionality
+  if standard media handling doesn't suit your needs (i.e. your data is in a db or in memory and you want to directly write to zip instead of having to use intermediary file) then supply a `media_function(outzip, idx, path)` to package instantiation. use `outzip.writestr()` to write data, `path` as the target filepath when anki imports into its collection.media folder (must follow same uniqueness constraint mentioned above for standard functionality), `idx` is the path you MUST use to write to zip (this is anki requirement due to how it unpacks media)). 
+
+```python 
+from genanki import Package
+
+def media_function(outzip, idx, path): 
+  data = sqlite3.connect(DBPATH).execute('select data from table').fetchone()[0]
+  outzip.writestr(str(idx), data)
+
+Package(DECK, media_files=MEDIA_PATHS, media_function=media_function).write_to_file(PACKAGE_PATH)
+```
+
+
 ## Note GUIDs
 `Note`s have a `guid` property that uniquely identifies the note. If you import a new note that has the same GUID as an
 existing note, the new note will overwrite the old one (as long as their models have the same fields).
