@@ -5,6 +5,7 @@ import sqlite3
 import tempfile
 import time
 import zipfile
+import shutil
 
 from .apkg_col import APKG_COL
 from .apkg_schema import APKG_SCHEMA
@@ -29,28 +30,34 @@ class Package:
     :param timestamp: Timestamp (float seconds since Unix epoch) to assign to generated notes/cards. Can be used to
         make build hermetic. Defaults to time.time().
     """
-    dbfilename = tempfile.NamedTemporaryFile()
-    
-    with sqlite3.connect(dbfilename.name) as conn:
-      cursor = conn.cursor()
-      if timestamp is None: timestamp = time.time()
-      id_gen = itertools.count(int(timestamp * 1000))
-      self.write_to_db(cursor, timestamp, id_gen)
+    with tempfile.NamedTemporaryFile() as dbfilename:
 
-    with zipfile.ZipFile(file, 'w') as outzip:
-      outzip.write(dbfilename.name, 'collection.anki2')
+      with sqlite3.connect(dbfilename.name) as conn:
+        cursor = conn.cursor()
+        if timestamp is None: timestamp = time.time()
+        id_gen = itertools.count(int(timestamp * 1000))
+        self.write_to_db(cursor, timestamp, id_gen)
 
-      media_file_idx_to_path = dict(enumerate(self.media_files))
-      media_json = {idx: os.path.basename(path) for idx, path in media_file_idx_to_path.items()}
-      outzip.writestr('media', json.dumps(media_json))
+      with tempfile.NamedTemporaryFile(dir=os.path.dirname(file), suffix='.apkg', delete=False) as tempapkg:
+        with zipfile.ZipFile(tempapkg.name, 'w') as outzip:
+          outzip.write(dbfilename.name, 'collection.anki2')
 
-      for idx, path in media_file_idx_to_path.items():
-        if callable(self.media_function):
-          self.media_function(outzip, idx, path)
-        else:
-          outzip.write(path, str(idx))
-        
-    dbfilename.close()
+          media_file_idx_to_path = dict(enumerate(self.media_files))
+          media_json = {idx: os.path.basename(path) for idx, path in media_file_idx_to_path.items()}
+          outzip.writestr('media', json.dumps(media_json))
+
+          for idx, path in media_file_idx_to_path.items():
+            if callable(self.media_function):
+              self.media_function(outzip, idx, path)
+            else:
+              outzip.write(path, str(idx))
+        try:
+          shutil.move(tempapkg.name, file)
+        except Exception as e:
+          tempapkg.close()
+          raise e
+
+
 
   def write_to_db(self, cursor, timestamp: float, id_gen):
     cursor.executescript(APKG_SCHEMA)
