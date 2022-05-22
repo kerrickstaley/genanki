@@ -48,7 +48,7 @@ class _TagList(list):
 
 
 class Note:
-  _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-zA-Z0-9]+(?: .*|/?)>)(?:.|\n)*?>')
+  _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-zA-Z0-9]+(?: .*|/?)>|!--)(?:.|\n)*?>')
 
   def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None, due=0):
     self.model = model

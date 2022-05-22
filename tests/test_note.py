@@ -172,7 +172,7 @@ class TestFindInvalidHtmlTagsInField:
 
   def test_ok_attrs(self):
     assert genanki.Note._find_invalid_html_tags_in_field('<h1 style="color: red">STOP</h1>') == []
-    
+
   def test_ok_uppercase(self):
     assert genanki.Note._find_invalid_html_tags_in_field('<TD></Td>') == []
 
@@ -206,6 +206,10 @@ class TestFindInvalidHtmlTagsInField:
     ]
 
     assert genanki.Note._find_invalid_html_tags_in_field(latex_code) == expected_invalid_tags
+
+  def test_ok_html_comment(self):
+    # see https://github.com/kerrickstaley/genanki/issues/108
+    assert genanki.Note._find_invalid_html_tags_in_field('<!-- here is a comment -->') == []
 
 
 def test_warns_on_invalid_html_tags():
