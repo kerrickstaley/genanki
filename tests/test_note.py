@@ -3,6 +3,7 @@ import pytest
 import time
 import genanki
 from unittest import mock
+import tempfile
 import textwrap
 import warnings
 
@@ -265,3 +266,36 @@ def test_suppress_warnings(recwarn):
     my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
 
   assert not warn_recorder
+
+
+def test_furigana_field():
+  # Fields like {{furigana:Reading}} are supported by the Japanese Support plugin:
+  # https://ankiweb.net/shared/info/3918629684
+  # Japanese Support is quasi-official (it was created by Damien Elmes, the creator of Anki) and so
+  # we support it in genanki.
+  my_model = genanki.Model(
+    1523004567,
+    'Japanese',
+    fields=[
+      {'name': 'Question'},
+      {'name': 'Answer'},
+    ],
+    templates=[
+      {
+        'name': 'Card 1',
+        'qfmt': '{{Question}}',
+        'afmt': '{{FrontSide}}<hr id="answer">{{furigana:Answer}}',
+      },
+    ])
+
+  my_note = genanki.Note(
+    model=my_model,
+    fields=['kanji character', '漢字[かんじ]'])
+
+  my_deck = genanki.Deck(1702181380, 'Japanese')
+  my_deck.add_note(my_note)
+
+  with tempfile.NamedTemporaryFile() as tempf:
+    my_deck.write_to_file(tempf.name)
+
+  # test passes if there is no exception
