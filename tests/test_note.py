@@ -211,6 +211,10 @@ class TestFindInvalidHtmlTagsInField:
     # see https://github.com/kerrickstaley/genanki/issues/108
     assert genanki.Note._find_invalid_html_tags_in_field('<!-- here is a comment -->') == []
 
+  def test_ok_cdata(self):
+    # see https://github.com/kerrickstaley/genanki/issues/108
+    assert genanki.Note._find_invalid_html_tags_in_field('<![CDATA[ here is some cdata ]]>') == []
+
 
 def test_warns_on_invalid_html_tags():
   my_model = genanki.Model(
