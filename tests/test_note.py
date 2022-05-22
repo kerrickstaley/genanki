@@ -2,6 +2,7 @@ import itertools
 import pytest
 import time
 import genanki
+import os
 from unittest import mock
 import tempfile
 import textwrap
@@ -295,7 +296,10 @@ def test_furigana_field():
   my_deck = genanki.Deck(1702181380, 'Japanese')
   my_deck.add_note(my_note)
 
-  with tempfile.NamedTemporaryFile() as tempf:
-    my_deck.write_to_file(tempf.name)
+  with tempfile.NamedTemporaryFile(delete=False) as tempf:
+    pass
+
+  my_deck.write_to_file(tempf.name)
+  os.remove(tempf.name)
 
   # test passes if there is no exception
