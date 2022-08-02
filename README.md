@@ -99,7 +99,7 @@ my_model = genanki.Model(
 
 Then, set the `MyMedia` field on your card to `[sound:sound.mp3]` for audio and `<img src="image.jpg">` for images.
 
-You *cannot* put `<img src="{MyMedia}">` in the template and `image.jpg` in the field. See these sections in the Anki manual for more information: [Importing Media](https://docs.ankiweb.net/importing.html#importing-media) and [Media & LaTeX](https://docs.ankiweb.net/#/templates/fields?id=media-amp-latex).
+You *cannot* put `<img src="{MyMedia}">` in the template and `image.jpg` in the field. See these sections in the Anki manual for more information: [Importing Media](https://docs.ankiweb.net/importing.html#importing-media) and [Media & LaTeX](https://docs.ankiweb.net/templates/fields.html#media--latex).
 
 You should only put the filename (aka basename) and not the full path in the field; `<img src="images/image.jpg">` will *not* work. Media files should have unique filenames.
 
