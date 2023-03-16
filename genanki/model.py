@@ -95,7 +95,7 @@ class Model:
       tmpl.setdefault('bqfmt', '')
       tmpl.setdefault('bfont', '')
       tmpl.setdefault('bsize', 0)
-      tmpl.setdefault('did', None)  # TODO None works just fine here, but should it be deck_id?
+      tmpl.setdefault('did', deck_id)
 
     for ord_, field in enumerate(self.fields):
       field['ord'] = ord_
