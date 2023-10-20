@@ -521,7 +521,7 @@ class TestWithCollection:
     next_card = self.col.sched.getCard()
     next_note = self.col.getNote(next_card.nid)
 
-    # Next card changes to "Capital of Oregon", because it was created first.
+    # Next card is "Capital of Washington", because it was created first.
     assert next_note.fields == ['Capital of Washington', 'Olympia']
 
   def test_notes_with_card_and_note_due(self):
