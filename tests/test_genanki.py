@@ -118,6 +118,34 @@ TEST_MODEL_WITH_SORT_FIELD_INDEX = genanki.Model(
   sort_field_index=CUSTOM_SORT_FIELD_INDEX,
 )
 
+TEST_MODEL_WITH_2_TEMPLATES = genanki.Model(
+  234532, 'foomodel',
+  fields=[
+    {
+      'name': 'AField',
+    },
+    {
+      'name': 'BField',
+    },
+  ],
+  templates=[
+    {
+      'name': 'card1',
+      'qfmt': '{{AField}}',
+      'afmt': '{{FrontSide}}'
+              '<hr id="answer">'
+              '{{BField}}',
+    },
+    {
+      'name': 'card2',
+      'qfmt': '{{BField}}',
+      'afmt': '{{FrontSide}}'
+              '<hr id="answer">'
+              '{{AField}}',
+    }
+  ],
+)
+
 # VALID_MP3 and VALID_JPG courtesy of https://github.com/mathiasbynens/small
 VALID_MP3 = (
   b'\xff\xe3\x18\xc4\x00\x00\x00\x03H\x00\x00\x00\x00LAME3.98.2\x00\x00\x00'
@@ -476,3 +504,88 @@ class TestWithCollection:
     # Next card changes to "Capital of Oregon", because it has lower
     # due value.
     assert next_note.fields == ['Capital of Oregon', 'Salem']
+
+  def test_notes_with_default_due(self):
+    deck = genanki.Deck(4145273928, 'foodeck')
+    deck.add_note(genanki.Note(
+      TEST_MODEL,
+      ['Capital of Washington', 'Olympia']))
+    deck.add_note(genanki.Note(
+      TEST_MODEL,
+      ['Capital of Oregon', 'Salem']))
+
+    self.import_package(genanki.Package(deck))
+
+    self.col.decks.select(self.col.decks.id('foodeck'))
+    self.col.sched.reset()
+    next_card = self.col.sched.getCard()
+    next_note = self.col.getNote(next_card.nid)
+
+    # Next card changes to "Capital of Oregon", because it was created first.
+    assert next_note.fields == ['Capital of Washington', 'Olympia']
+
+  def test_notes_with_card_and_note_due(self):
+    deck = genanki.Deck(4145273929, 'foodeck')
+    deck.add_note(genanki.Note(
+      TEST_MODEL_WITH_2_TEMPLATES,
+      ['D', 'E'], due=2))
+    deck.add_note(genanki.Note(
+      TEST_MODEL_WITH_2_TEMPLATES,
+      ['B', 'C'], due=1))
+    deck.add_note(genanki.Note(
+      TEST_MODEL_WITH_2_TEMPLATES,
+      ['A', 'F'], due=[0, 3]))
+
+    self.import_package(genanki.Package(deck))
+
+    self.col.decks.select(self.col.decks.id('foodeck'))
+    self.col.sched.reset()
+
+    # 6 cards in total
+    cards = [
+      self.col.sched.getCard(),
+      self.col.sched.getCard(),
+      self.col.sched.getCard(),
+      self.col.sched.getCard(),
+      self.col.sched.getCard(),
+      self.col.sched.getCard(),
+    ]
+
+    note0 = self.col.getNote(cards[0].nid)
+    note1 = self.col.getNote(cards[1].nid)
+    note2 = self.col.getNote(cards[2].nid)
+    note3 = self.col.getNote(cards[3].nid)
+    note4 = self.col.getNote(cards[4].nid)
+    note5 = self.col.getNote(cards[5].nid)
+
+    assert note0.fields == ['A', 'F']
+    assert note1.fields == ['B', 'C']
+    assert note2.fields == ['B', 'C']
+    assert note3.fields == ['D', 'E']
+    assert note4.fields == ['D', 'E']
+    assert note5.fields == ['A', 'F']
+
+  def test_notes_raises_when_card_due_mismatch1(self):
+    # Empty.
+    with pytest.raises(ValueError):
+      deck = genanki.Deck(4145273929, 'foodeck')
+      deck.add_note(genanki.Note(
+        TEST_MODEL_WITH_2_TEMPLATES,
+        ['D', 'E'], due=[]))
+      self.import_package(genanki.Package(deck))
+
+    # Missing one.
+    with pytest.raises(ValueError):
+      deck = genanki.Deck(4145273929, 'foodeck')
+      deck.add_note(genanki.Note(
+        TEST_MODEL_WITH_2_TEMPLATES,
+        ['D', 'E'], due=[0]))
+      self.import_package(genanki.Package(deck))
+
+    # More than one.
+    with pytest.raises(ValueError):
+      deck = genanki.Deck(4145273929, 'foodeck')
+      deck.add_note(genanki.Note(
+        TEST_MODEL_WITH_2_TEMPLATES,
+        ['D', 'E'], due=[0, 0, 0]))
+      self.import_package(genanki.Package(deck))
