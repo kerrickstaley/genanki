@@ -15,17 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macos, windows]
-        python-version: [3.6, 3.8, 3.9]
+        python-version: [3.8, 3.11]
         anki-version: [ed8340a4e3a2006d6285d7adf9b136c735ba2085]
-        exclude:
-          # latest Ubuntu supports Python 3.7 and later
-          - os: ubuntu
-            python-version: 3.6
-          # compatible pyaudio not available
-          - os: windows
-            python-version: 3.8
-          - os: windows
-            python-version: 3.9
     steps:
       - uses: actions/checkout@v2
       - if: ${{ matrix.os == 'ubuntu' }}

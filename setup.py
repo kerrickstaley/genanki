@@ -20,7 +20,7 @@ setup(name='genanki',
       packages=['genanki'],
       zip_safe=False,
       include_package_data=True,
-      python_requires='>=3.6',
+      python_requires='>=3.8',
       install_requires=[
         'cached-property',
         'frozendict',
