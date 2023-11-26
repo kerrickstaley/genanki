@@ -29,11 +29,10 @@ def test_ok():
     model=my_model,
     fields=['Capital of Argentina', 'Buenos Aires'])
 
-  with pytest.warns(None) as warn_recorder:
+  # https://stackoverflow.com/a/45671804
+  with warnings.catch_warnings():
+    warnings.simplefilter('error')
     my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
-
-  # Should be no warnings issued.
-  assert not warn_recorder
 
 
 class TestTags:
@@ -262,11 +261,10 @@ def test_suppress_warnings(recwarn):
     model=my_model,
     fields=['Capital of <$> Argentina', 'Buenos Aires'])
 
-  with pytest.warns(None) as warn_recorder:
+  with warnings.catch_warnings():
+    warnings.simplefilter('error')
     warnings.filterwarnings('ignore', message='^Field contained the following invalid HTML tags', module='genanki')
     my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
-
-  assert not warn_recorder
 
 
 def test_furigana_field():
