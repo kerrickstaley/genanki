@@ -267,6 +267,18 @@ def test_suppress_warnings(recwarn):
     my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
 
 
+# https://github.com/kerrickstaley/genanki/issues/121
+def test_does_not_warn_on_html_tags_in_guid():
+  my_note = genanki.Note(
+    model=genanki.BASIC_MODEL,
+    fields=['Capital of Iowa', 'Des Moines'],
+    guid='Gt<p8{N2>Z')
+
+  with warnings.catch_warnings():
+    warnings.simplefilter('error')
+    my_note.write_to_db(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), itertools.count(int(time.time() * 1000)))
+
+
 def test_furigana_field():
   # Fields like {{furigana:Reading}} are supported by the Japanese Support plugin:
   # https://ankiweb.net/shared/info/3918629684
