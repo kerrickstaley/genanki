@@ -46,7 +46,11 @@ CSS.
 
 You need to pass a `model_id` so that Anki can keep track of your model. It's important that you use a unique `model_id`
 for each `Model` you define. Use `import random; random.randrange(1 << 30, 1 << 31)` to generate a suitable model_id, and hardcode it
-into your `Model` definition.
+into your `Model` definition. You can print one at the command line with
+
+```bash
+python3 -c "import random; print(random.randrange(1 << 30, 1 << 31))"
+```
 
 ## Generating a Deck/Package
 To import your notes into Anki, you need to add them to a `Deck`:
