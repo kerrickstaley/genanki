@@ -49,7 +49,7 @@ for each `Model` you define. Use `import random; random.randrange(1 << 30, 1 << 
 into your `Model` definition. You can print one at the command line with
 
 ```bash
-python -c "import random; print(random.randrange(1 << 30, 1 << 31))"
+python3 -c "import random; print(random.randrange(1 << 30, 1 << 31))"
 ```
 
 ## Generating a Deck/Package
