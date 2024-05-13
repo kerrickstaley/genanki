@@ -19,7 +19,7 @@ class Package:
     else:
       self.decks = deck_or_decks
 
-    self.media_files = media_files or []
+    self.media_files = list(set(media_files or []))
 
   def write_to_file(self, file, timestamp: Optional[float] = None):
     """
