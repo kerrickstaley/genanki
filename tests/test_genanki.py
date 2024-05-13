@@ -135,7 +135,7 @@ VALID_JPG = (
 
 
 class TestWithCollection:
-  def setup(self):
+  def setup_method(self):
     # TODO make this less messy
     colf = tempfile.NamedTemporaryFile(suffix='.anki2')
     colf_name = colf.name
