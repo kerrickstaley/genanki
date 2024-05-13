@@ -1,10 +1,11 @@
 import json
 
 class Deck:
-  def __init__(self, deck_id=None, name=None, description=''):
+  def __init__(self, deck_id=None, name=None, description='', conf=None):
     self.deck_id = deck_id
     self.name = name
     self.description = description
+    self.conf = conf
     self.notes = []
     self.models = {}  # map of model id to model
 
@@ -15,9 +16,10 @@ class Deck:
     self.models[model.model_id] = model
 
   def to_json(self):
+    conf = 1 if self.conf is None else self.conf.deck_conf_id
     return {
       "collapsed": False,
-      "conf": 1,
+      "conf": conf,
       "desc": self.description,
       "dyn": 0,
       "extendNew": 0,
@@ -54,6 +56,9 @@ class Deck:
     decks = json.loads(decks_json_str)
     decks.update({str(self.deck_id): self.to_json()})
     cursor.execute('UPDATE col SET decks = ?', (json.dumps(decks),))
+
+    if self.conf is not None:
+      self.conf.write_to_db(cursor, timestamp)
 
     models_json_str, = cursor.execute('SELECT models from col').fetchone()
     models = json.loads(models_json_str)
