@@ -5,4 +5,4 @@ set -e
 # enter venv if needed
 [[ -z "$VIRTUAL_ENV" ]] && source tests_venv/bin/activate
 
-exec python setup.py pytest --addopts tests
+exec python -m pytest tests/
