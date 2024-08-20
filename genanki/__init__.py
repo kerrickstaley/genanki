@@ -6,6 +6,7 @@ from .deck import Deck
 from .model import Model
 from .note import Note
 from .package import Package
+from .deck_conf import DeckConf
 
 from .util import guid_for
 
