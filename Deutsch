@@ -1,0 +1,42 @@
+# Attempting again to create the Anki deck in .apkg format using manual method
+
+# Using raw data for German-Arabic phrases
+from genanki import Model, Note, Deck, Package
+
+# Defining a simple model for Anki cards with German on the front and Arabic on the back
+model = Model(
+    1607392319,
+    'Simple Model',
+    fields=[
+        {'name': 'German'},
+        {'name': 'Arabic'},
+    ],
+    templates=[
+        {
+            'name': 'Card 1',
+            'qfmt': '{{German}}',
+            'afmt': '{{FrontSide}}<hr id="answer">{{Arabic}}',
+        },
+    ])
+
+# Creating a deck
+deck = Deck(
+    2059400110,
+    'German-Arabic Phrases')
+
+# Adding notes (cards) to the deck
+notes = [
+    Note(model=model, fields=["Viele junge Männer hier neigen dazu, dies zu tun.", "الكثير من الشبان هنا يميلون لفعل هذا."]),
+    Note(model=model, fields=["Das wird von älteren Menschen bevorzugt.", "هذا يكون مفضلا من كبار السن."]),
+    Note(model=model, fields=["Es führt zu positiven Veränderungen im Leben der Menschen.", "تؤدي إلى تغييرات إيجابية في حياة الناس."])
+]
+
+# Adding notes to the deck
+for note in notes:
+    deck.add_note(note)
+
+# Saving the deck as .apkg (Anki package format)
+output_apkg = '/mnt/data/german_arabic_phrases.apkg'
+Package(deck).write_to_file(output_apkg)
+
+output_apkg
