@@ -101,7 +101,7 @@ class Note:
       field_value = self.fields[field_index] if field_index >= 0 else ""
       # update card_ords with each cloze reference N, e.g. "{{cN::...}}"
       card_ords.update(int(m)-1 for m in re.findall(r"{{c(\d+)::.+?}}", field_value, re.DOTALL) if int(m) > 0)
-    if card_ords == {}:
+    if not card_ords:
       card_ords = {0}
     return([Card(ord) for ord in card_ords])
 
