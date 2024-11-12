@@ -140,7 +140,7 @@ class TestWithCollection:
     colf = tempfile.NamedTemporaryFile(suffix='.anki2')
     colf_name = colf.name
     colf.close()  # colf is deleted
-    self.col = anki.Collection(colf_name)
+    self.col = anki.collection.Collection(colf_name)
 
   def import_package(self, pkg, timestamp=None):
     """
