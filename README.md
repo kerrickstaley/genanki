@@ -78,7 +78,7 @@ To add sounds or images, set the `media_files` attribute on your `Package`:
 
 ```python
 my_package = genanki.Package(my_deck)
-my_package.media_files = ['sound.mp3', 'images/image.jpg']
+my_package.media_files = ['my_sound_file.mp3', 'images/my_image_file.jpg']
 ```
 
 `media_files` should have the path (relative or absolute) to each file. To use them in notes, first add a field to your model, and reference that field in your template:
@@ -101,11 +101,11 @@ my_model = genanki.Model(
   ])
 ```
 
-Then, set the `MyMedia` field on your card to `[sound:sound.mp3]` for audio and `<img src="image.jpg">` for images.
+Then, set the `MyMedia` field on your card to `[sound:my_sound_file.mp3]` for audio and `<img src="my_image_file.jpg">` for images.
 
-You *cannot* put `<img src="{MyMedia}">` in the template and `image.jpg` in the field. See these sections in the Anki manual for more information: [Importing Media](https://docs.ankiweb.net/importing/text-files.html#importing-media) and [Media & LaTeX](https://docs.ankiweb.net/templates/fields.html#media--latex).
+You *cannot* put `<img src="{MyMedia}">` in the template and `my_image_file.jpg` in the field. See these sections in the Anki manual for more information: [Importing Media](https://docs.ankiweb.net/importing/text-files.html#importing-media) and [Media & LaTeX](https://docs.ankiweb.net/templates/fields.html#media--latex).
 
-You should only put the filename (aka basename) and not the full path in the field; `<img src="images/image.jpg">` will *not* work. Media files should have unique filenames.
+You should only put the filename (aka basename) and not the full path in the field; `<img src="images/my_image_file.jpg">` will *not* work. Media files should have unique filenames.
 
 ## Note GUIDs
 `Note`s have a `guid` property that uniquely identifies the note. If you import a new note that has the same GUID as an
