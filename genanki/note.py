@@ -1,5 +1,7 @@
 import re
 import warnings
+from typing import Union, List
+
 from cached_property import cached_property
 
 from .builtin_models import _fix_deprecated_builtin_models_and_warn
@@ -50,7 +52,7 @@ class _TagList(list):
 class Note:
   _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-zA-Z0-9]+(?: .*|/?)>|!--|!\[CDATA\[)(?:.|\n)*?>')
 
-  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None, due=0):
+  def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None, due: Union[int, List[int]] = 0):
     self.model = model
     self.fields = fields
     self.sort_field = sort_field
@@ -167,14 +169,26 @@ class Note:
     ))
 
     note_id = cursor.lastrowid
+    nr_cards = len(self.cards)
+    card_dues_by_ord = self._get_due_by_ord(nr_cards)
     for card in self.cards:
-      card.write_to_db(cursor, timestamp, deck_id, note_id, id_gen, self.due)
+      card_due = card_dues_by_ord[card.ord]
+      card.write_to_db(cursor, timestamp, deck_id, note_id, id_gen, card_due)
 
   def _format_fields(self):
     return '\x1f'.join(self.fields)
 
   def _format_tags(self):
     return ' ' + ' '.join(self.tags) + ' '
+
+  def _get_due_by_ord(self, nr_cards: int) -> List[int]:
+    if not isinstance(self.due, list):
+      return [self.due for _ in range(nr_cards)]
+
+    if nr_cards != len(self.due):
+      raise ValueError(f"Expected self.due to have length {nr_cards + 1}")
+
+    return self.due
 
   def __repr__(self):
     attrs = ['model', 'fields', 'sort_field', 'tags', 'guid']
