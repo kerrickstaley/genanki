@@ -476,3 +476,44 @@ class TestWithCollection:
     # Next card changes to "Capital of Oregon", because it has lower
     # due value.
     assert next_note.fields == ['Capital of Oregon', 'Salem']
+
+  def test_deck_with_config(self):
+    conf = genanki.DeckConf(666, 'MyConf')
+    # Changing default initialFactor from 2500 to 4500
+    conf.conf['new']['initialFactor'] = 4500
+    deck = genanki.Deck(112233, 'foodeck', conf=conf)
+    # The Anki importer need at least one card to import the config.
+    # See related discussion:
+    # https://anki.tenderapp.com/discussions/ankidesktop/38114-importing-apkg-does-not-update-deck-config-fields
+    note = genanki.Note(TEST_MODEL, ['a', 'b'])
+    deck.add_note(note)
+
+    self.import_package(genanki.Package(deck))
+
+    all_confs = self.col.decks.allConf()
+    assert len(all_confs) == 2  # default conf and MyConf
+    imported_deck = all_confs[1]
+
+    assert imported_deck['new']['initialFactor'] == 4500
+
+  def test_deck_with_2_config(self):
+    conf = genanki.DeckConf(666, 'MyConf')
+    conf.conf['new']['initialFactor'] = 4500
+    deck = genanki.Deck(112233, 'foodeck', conf=conf)
+    note = genanki.Note(TEST_MODEL, ['a', 'b'])
+    deck.add_note(note)
+
+    self.import_package(genanki.Package(deck))
+    conf = genanki.DeckConf(6666, 'MyConf2')
+    conf.conf['new']['initialFactor'] = 5500
+    deck = genanki.Deck(11223344, 'boodeck', conf=conf)
+    note = genanki.Note(TEST_MODEL, ['a', 'b'])
+    deck.add_note(note)
+
+    self.import_package(genanki.Package(deck))
+
+    all_confs = self.col.decks.allConf()
+    assert len(all_confs) == 2  # default conf and MyConf
+    imported_deck = all_confs[1]
+
+    assert imported_deck['new']['initialFactor'] == 4500
