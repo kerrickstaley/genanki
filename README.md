@@ -52,6 +52,13 @@ into your `Model` definition. You can print one at the command line with
 python3 -c "import random; print(random.randrange(1 << 30, 1 << 31))"
 ```
 
+### Model Types
+
+When you instantiate a Model, you can pass a model_type argument to determine the type of flashcards generated:
+
+* genanki.model.FRONT_BACK (default): Generates a simple front-back card, displaying a question on the front and an answer on the back.
+* genanki.model.CLOZE: When you pass genanki.Model.CLOZE as the model_type, multiple flashcards are generated for Cloze notes, e.g., for a note like {{c1::Paris}} is the capital of {{c2::France}}, it will generate separate flashcards for each cloze deletion.
+
 ## Generating a Deck/Package
 To import your notes into Anki, you need to add them to a `Deck`:
 
