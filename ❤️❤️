@@ -1,0 +1,159 @@
+import genanki
+from PIL import Image, ImageDraw, ImageFont
+
+# Cria uma imagem de placeholder (200x100 pixels)
+img = Image.new('RGB', (200, 100), color=(73, 109, 137))
+d = ImageDraw.Draw(img)
+text = "Imagem"
+text_width, text_height = d.textsize(text)
+d.text(((200 - text_width) / 2, (100 - text_height) / 2), text, fill=(255, 255, 255))
+img_path = "placeholder.jpg"
+img.save(img_path)
+
+# Modelo simples para os flashcards (front e back)
+my_model = genanki.Model(
+    1607392319,
+    'Modelo Simples com Imagem',
+    fields=[
+        {'name': 'Front'},
+        {'name': 'Back'},
+    ],
+    templates=[
+        {
+            'name': 'Cartão 1',
+            'qfmt': '{{Front}}',
+            'afmt': '{{FrontSide}}<hr id="answer">{{Back}}',
+        },
+    ])
+
+# Criação do deck com o nome "amor ❤️ ❤️"
+my_deck = genanki.Deck(
+    2059400110,
+    'amor ❤️ ❤️')
+
+# Lista de flashcards agrupados por seção
+cards = [
+    # Introdução à Biologia Celular
+    ("Introdução à Biologia Celular - O que é Biologia Celular? <br><img src='placeholder.jpg'>",
+     "É a área da biologia que estuda as células, suas estruturas e funções."),
+    ("Introdução à Biologia Celular - Quais são os tipos de células? <br><img src='placeholder.jpg'>",
+     "Procariontes: simples, sem núcleo organizado (exemplo: bactérias).<br>Eucariontes: mais complexas, com núcleo (exemplo: plantas e animais)."),
+    ("Introdução à Biologia Celular - O que diz a Teoria Celular? <br><img src='placeholder.jpg'>",
+     "1. Todos os seres vivos são formados por células.<br>2. A célula é a unidade funcional dos organismos.<br>3. Toda célula vem de outra célula pré-existente."),
+    ("Introdução à Biologia Celular - Os vírus são seres vivos? <br><img src='placeholder.jpg'>",
+     "Alguns dizem que não, porque não têm células e não se reproduzem sozinhos.<br>Outros dizem que sim, pois têm material genético e evoluem."),
+    
+    # Membrana Plasmática
+    ("Membrana Plasmática - O que é a Membrana Plasmática? <br><img src='placeholder.jpg'>",
+     "É uma camada que envolve a célula e controla o que entra e sai."),
+    ("Membrana Plasmática - Do que é feita a Membrana Plasmática? <br><img src='placeholder.jpg'>",
+     "É composta por uma bicamada lipídica (gordura) e proteínas."),
+    ("Membrana Plasmática - Qual o modelo atual da membrana? <br><img src='placeholder.jpg'>",
+     "Mosaico Fluido: a membrana é flexível e tem proteínas espalhadas."),
+    ("Membrana Plasmática - Quais são os tipos de transporte passivo? <br><img src='placeholder.jpg'>",
+     "1. Difusão simples: moléculas atravessam diretamente.<br>2. Difusão facilitada: proteínas ajudam moléculas maiores.<br>3. Osmose: passagem de água do meio menos concentrado para o mais concentrado."),
+    ("Membrana Plasmática - O que é transporte ativo? <br><img src='placeholder.jpg'>",
+     "A célula gasta energia (ATP) para mover substâncias contra o fluxo normal.<br>Exemplo: Bomba de Sódio e Potássio."),
+    ("Membrana Plasmática - O que são especializações da membrana? <br><img src='placeholder.jpg'>",
+     "Glicocálix: proteção e reconhecimento celular.<br>Cílios e flagelos: ajudam no movimento da célula."),
+    
+    # Citoplasma e Organelas
+    ("Citoplasma e Organelas - O que é o citoplasma? <br><img src='placeholder.jpg'>",
+     "É um líquido gelatinoso dentro da célula onde ficam as organelas."),
+    ("Citoplasma e Organelas - Para que servem os ribossomos? <br><img src='placeholder.jpg'>",
+     "Produzem proteínas, essenciais para a célula."),
+    ("Citoplasma e Organelas - Qual a função do Retículo Endoplasmático? <br><img src='placeholder.jpg'>",
+     "Rugoso (RER): faz proteínas.<br>Liso (REL): faz lipídios e desintoxica a célula."),
+    ("Citoplasma e Organelas - O que faz o Complexo de Golgi? <br><img src='placeholder.jpg'>",
+     "Empacota e distribui substâncias dentro e fora da célula."),
+    ("Citoplasma e Organelas - Qual a função dos Lisossomos? <br><img src='placeholder.jpg'>",
+     "Fazem a 'faxina', destruindo partes velhas e restos de comida."),
+    ("Citoplasma e Organelas - O que fazem as mitocôndrias? <br><img src='placeholder.jpg'>",
+     "Produzem energia (ATP) através da respiração celular."),
+    ("Citoplasma e Organelas - Qual a função dos peroxissomos? <br><img src='placeholder.jpg'>",
+     "Eliminam substâncias tóxicas, principalmente no fígado."),
+    ("Citoplasma e Organelas - O que fazem os centríolos? <br><img src='placeholder.jpg'>",
+     "Ajudam na divisão celular e formam cílios e flagelos."),
+    
+    # Organelas Exclusivas das Células Vegetais
+    ("Organelas Exclusivas das Células Vegetais - O que são cloroplastos? <br><img src='placeholder.jpg'>",
+     "Organelas que fazem fotossíntese, transformando luz solar em energia."),
+    ("Organelas Exclusivas das Células Vegetais - O que é o vacúolo central? <br><img src='placeholder.jpg'>",
+     "Armazena água e nutrientes e regula a pressão da célula vegetal."),
+    
+    # Conceitos Básicos
+    ("Conceitos Básicos - O que são células unicelulares? <br><img src='placeholder.jpg'>",
+     "São organismos formados por apenas uma célula (exemplo: bactérias e protozoários)."),
+    ("Conceitos Básicos - O que são células multicelulares? <br><img src='placeholder.jpg'>",
+     "Organismos formados por muitas células, como animais e plantas."),
+    ("Conceitos Básicos - O que é homeostase celular? <br><img src='placeholder.jpg'>",
+     "A capacidade da célula de manter um ambiente interno estável."),
+    ("Conceitos Básicos - O que são organelas? <br><img src='placeholder.jpg'>",
+     "Pequenos 'órgãos' dentro da célula que desempenham funções específicas."),
+    ("Conceitos Básicos - O que significa 'CHONPS'? <br><img src='placeholder.jpg'>",
+     "São os principais elementos químicos das células: Carbono, Hidrogênio, Oxigênio, Nitrogênio, Fósforo e Enxofre."),
+    
+    # Membrana Plasmática e Transporte
+    ("Membrana Plasmática e Transporte - Como a membrana plasmática é chamada? <br><img src='placeholder.jpg'>",
+     "Também pode ser chamada de membrana celular."),
+    ("Membrana Plasmática e Transporte - O que é permeabilidade seletiva? <br><img src='placeholder.jpg'>",
+     "A membrana controla o que entra e sai da célula."),
+    ("Membrana Plasmática e Transporte - O que diferencia difusão simples e facilitada? <br><img src='placeholder.jpg'>",
+     "Simples: passa direto pela membrana.<br>Facilitada: precisa de proteínas para ajudar."),
+    ("Membrana Plasmática e Transporte - Qual a principal diferença entre transporte passivo e ativo? <br><img src='placeholder.jpg'>",
+     "Passivo: não gasta energia (ATP).<br>Ativo: gasta energia."),
+    ("Membrana Plasmática e Transporte - O que é fagocitose? <br><img src='placeholder.jpg'>",
+     "A célula 'come' partículas grandes, como bactérias."),
+    ("Membrana Plasmática e Transporte - O que é pinocitose? <br><img src='placeholder.jpg'>",
+     "A célula 'bebe' líquidos e pequenas partículas."),
+    
+    # Estruturas Celulares
+    ("Estruturas Celulares - Qual a função do citoesqueleto? <br><img src='placeholder.jpg'>",
+     "Dá forma e suporte à célula e ajuda no movimento."),
+    ("Estruturas Celulares - O que são plasmídeos? <br><img src='placeholder.jpg'>",
+     "Pequenas moléculas de DNA encontradas em bactérias."),
+    ("Estruturas Celulares - Como as células procariontes armazenam DNA? <br><img src='placeholder.jpg'>",
+     "O DNA fica disperso no citoplasma, na região chamada nucleoide."),
+    ("Estruturas Celulares - Como as células eucariontes armazenam DNA? <br><img src='placeholder.jpg'>",
+     "Dentro do núcleo, protegido pela membrana nuclear."),
+    ("Estruturas Celulares - Qual a única organela presente em células procariontes? <br><img src='placeholder.jpg'>",
+     "Ribossomos, pois produzem proteínas."),
+    
+    # Organelas e Suas Funções
+    ("Organelas e Suas Funções - Qual a principal função do retículo endoplasmático rugoso (RER)? <br><img src='placeholder.jpg'>",
+     "Produzir proteínas."),
+    ("Organelas e Suas Funções - Qual a principal função do retículo endoplasmático liso (REL)? <br><img src='placeholder.jpg'>",
+     "Produzir lipídios e desintoxicar a célula."),
+    ("Organelas e Suas Funções - O que acontece no Complexo de Golgi? <br><img src='placeholder.jpg'>",
+     "As substâncias da célula são modificadas, empacotadas e enviadas para o local certo."),
+    ("Organelas e Suas Funções - O que significa ATP? <br><img src='placeholder.jpg'>",
+     "Adenosina Trifosfato, a principal fonte de energia da célula."),
+    ("Organelas e Suas Funções - Por que as mitocôndrias têm DNA próprio? <br><img src='placeholder.jpg'>",
+     "Porque elas vieram de bactérias que se tornaram parte das células eucariontes (Teoria Endossimbiótica)."),
+    
+    # Organelas das Células Vegetais
+    ("Organelas das Células Vegetais - Qual organela permite que plantas façam fotossíntese? <br><img src='placeholder.jpg'>",
+     "Cloroplastos."),
+    ("Organelas das Células Vegetais - Qual a substância responsável pela cor verde das plantas? <br><img src='placeholder.jpg'>",
+     "Clorofila, presente nos cloroplastos."),
+    ("Organelas das Células Vegetais - O que são vacúolos? <br><img src='placeholder.jpg'>",
+     "Bolsas que armazenam água, nutrientes e resíduos em células vegetais."),
+    ("Organelas das Células Vegetais - O que diferencia células vegetais de animais? <br><img src='placeholder.jpg'>",
+     "Células vegetais têm cloroplastos, parede celular e vacúolo central."),
+]
+
+# Adiciona os cartões ao deck
+for front, back in cards:
+    note = genanki.Note(
+        model=my_model,
+        fields=[front, back]
+    )
+    my_deck.add_note(note)
+
+# Define a lista de arquivos de mídia (imagem)
+package = genanki.Package(my_deck)
+package.media_files = [img_path]
+
+# Gera o arquivo .apkg
+package.write_to_file('amor.apkg')
+print("Arquivo 'amor.apkg' criado com sucesso!")
