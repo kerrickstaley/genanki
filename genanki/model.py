@@ -37,29 +37,60 @@ class Model:
       self.templates = yaml.full_load(templates)
 
   @cached_property
+  def _template_tokens(self):
+    # Literal text does not make a card eligible for generation: the front must
+    # contain a non-empty field after evaluating its conditional sections.
+    templates = []
+    for template in self.templates:
+      tokens = []
+      for token_type, key in chevron.tokenizer.tokenize(template['qfmt']):
+        if token_type == 'literal':
+          continue
+        # Filters affect rendering, but card generation only checks the field.
+        if token_type in ('variable', 'no escape'):
+          key = key.rsplit(':', 1)[-1]
+        tokens.append((token_type, key))
+      templates.append(tokens)
+    return templates
+
+  def _has_field_content(self, template_ord, field_names, ignore_inverted=False):
+    sections = [True]
+    for token_type, key in self._template_tokens[template_ord]:
+      if token_type == 'section':
+        sections.append(sections[-1] and key in field_names)
+      elif token_type == 'inverted section':
+        sections.append(sections[-1] and (ignore_inverted or key not in field_names))
+      elif token_type == 'end':
+        sections.pop()
+      elif token_type in ('variable', 'no escape') and sections[-1] and key in field_names:
+        return True
+    return False
+
+  @cached_property
   def _req(self):
     """
-    List of required fields for each template. Format is [tmpl_idx, "all"|"any", [req_field_1, req_field_2, ...]].
+    List of required fields for each template. Format is [tmpl_idx, "all"|"any"|"none", [field_ord, ...]].
 
-    Partial reimplementation of req computing logic from Anki. We use chevron instead of Anki's custom mustache
-    implementation.
+    Partial reimplementation of req computing logic from Anki, using chevron to tokenize templates.
 
     The goal is to figure out which fields are "required", i.e. if they are missing then the front side of the note
     doesn't contain any meaningful content.
     """
-    sentinel = 'SeNtInEl'
     field_names = [field['name'] for field in self.fields]
+    all_fields = set(field_names)
 
     req = []
-    for template_ord, template in enumerate(self.templates):
+    for template_ord in range(len(self.templates)):
+      # The legacy required-fields format cannot express inverse conditions.
+      # Like Anki, ignore those wrappers when computing this approximation;
+      # actual card generation evaluates the original conditions per note.
+      if not self._has_field_content(template_ord, all_fields, ignore_inverted=True):
+        req.append([template_ord, 'none', []])
+        continue
+
       required_fields = []
       for field_ord, field in enumerate(field_names):
-        field_values = {field: sentinel for field in field_names}
-        field_values[field] = ''
-
-        rendered = chevron.render(template['qfmt'], field_values)
-
-        if sentinel not in rendered:
+        if not self._has_field_content(template_ord, all_fields - {field}, ignore_inverted=True):
           # when this field is missing, there is no meaningful content (no field values) in the question, so this field
           # is required
           required_fields.append(field_ord)
@@ -70,21 +101,14 @@ class Model:
 
       # there are no required fields, so an "all" is not appropriate, switch to checking for "any"
       for field_ord, field in enumerate(field_names):
-        field_values = {field: '' for field in field_names}
-        field_values[field] = sentinel
-
-        rendered = chevron.render(template['qfmt'], field_values)
-
-        if sentinel in rendered:
+        if self._has_field_content(template_ord, {field}, ignore_inverted=True):
           # when this field is present, there is meaningful content in the question
           required_fields.append(field_ord)
 
-      if not required_fields:
-        raise Exception(
-          'Could not compute required fields for this template; please check the formatting of "qfmt": {}'.format(
-            template))
-
-      req.append([template_ord, 'any', required_fields])
+      # Some combinations of conditions cannot be described by "all" or "any".
+      # Anki uses "none" for those legacy summaries; the actual template still
+      # determines which cards are generated.
+      req.append([template_ord, 'any' if required_fields else 'none', required_fields])
 
     return req
 

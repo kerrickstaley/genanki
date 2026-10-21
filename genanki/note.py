@@ -49,6 +49,8 @@ class _TagList(list):
 
 class Note:
   _INVALID_HTML_TAG_RE = re.compile(r'<(?!/?[a-zA-Z0-9]+(?: .*|/?)>|!--|!\[CDATA\[)(?:.|\n)*?>')
+  # Anki treats ASCII whitespace and empty br/div tags as empty field content.
+  _EMPTY_FIELD_RE = re.compile(r'(?:[ \t\r\n\f\v]|</?(?:br|div) ?/?>)*', re.IGNORECASE | re.ASCII)
 
   def __init__(self, model=None, fields=None, sort_field=None, tags=None, guid=None, due=0):
     self.model = model
@@ -107,12 +109,12 @@ class Note:
 
   def _front_back_cards(self):
     """Create Front/Back cards"""
-    rv = []
-    for card_ord, any_or_all, required_field_ords in self.model._req:
-      op = {'any': any, 'all': all}[any_or_all]
-      if op(self.fields[ord_] for ord_ in required_field_ords):
-        rv.append(Card(card_ord))
-    return rv
+    # Evaluate each note's field presence directly. The legacy model._req
+    # summary cannot represent conditions that require a field to be empty.
+    field_names = {field['name'] for field, value in zip(self.model.fields, self.fields)
+                   if value and not self._EMPTY_FIELD_RE.fullmatch(value)}
+    return [Card(card_ord) for card_ord in range(len(self.model.templates))
+            if self.model._has_field_content(card_ord, field_names)]
 
   @property
   def guid(self):
