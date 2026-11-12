@@ -30,27 +30,32 @@ class Package:
     dbfile, dbfilename = tempfile.mkstemp()
     os.close(dbfile)
 
-    conn = sqlite3.connect(dbfilename)
-    cursor = conn.cursor()
+    try:
+      conn = sqlite3.connect(dbfilename)
+      try:
+        cursor = conn.cursor()
 
-    if timestamp is None:
-      timestamp = time.time()
+        if timestamp is None:
+          timestamp = time.time()
 
-    id_gen = itertools.count(int(timestamp * 1000))
-    self.write_to_db(cursor, timestamp, id_gen)
+        id_gen = itertools.count(int(timestamp * 1000))
+        self.write_to_db(cursor, timestamp, id_gen)
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+      finally:
+        conn.close()
 
-    with zipfile.ZipFile(file, 'w') as outzip:
-      outzip.write(dbfilename, 'collection.anki2')
+      with zipfile.ZipFile(file, 'w') as outzip:
+        outzip.write(dbfilename, 'collection.anki2')
 
-      media_file_idx_to_path = dict(enumerate(self.media_files))
-      media_json = {idx: os.path.basename(path) for idx, path in media_file_idx_to_path.items()}
-      outzip.writestr('media', json.dumps(media_json))
+        media_file_idx_to_path = dict(enumerate(self.media_files))
+        media_json = {idx: os.path.basename(path) for idx, path in media_file_idx_to_path.items()}
+        outzip.writestr('media', json.dumps(media_json))
 
-      for idx, path in media_file_idx_to_path.items():
-        outzip.write(path, str(idx))
+        for idx, path in media_file_idx_to_path.items():
+          outzip.write(path, str(idx))
+    finally:
+      os.remove(dbfilename)
 
   def write_to_db(self, cursor, timestamp: float, id_gen):
     cursor.executescript(APKG_SCHEMA)
